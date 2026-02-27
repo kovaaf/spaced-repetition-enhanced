@@ -8,4 +8,12 @@
              relativeToChangelogFile="true"/>
     <include file="changelogs/2025.05.30--createLearningSessionAndSessionCardsTable.xml"
              relativeToChangelogFile="true"/>
+    <include file="changelogs/2026.02.20--create-analytics-outbox-table.xml"
+             relativeToChangelogFile="true"/>
+    <include file="changelogs/2026.02.20--create-analytics-dlq-table.xml"
+             relativeToChangelogFile="true"/>
+    <include file="changelogs/2026.02.20--create-answer-events-table.xml"
+             relativeToChangelogFile="true"/>
+    <include file="changelogs/2026.02.22--create-analytics-outbox-sequence.xml"
+             relativeToChangelogFile="true"/>
 </databaseChangeLog>

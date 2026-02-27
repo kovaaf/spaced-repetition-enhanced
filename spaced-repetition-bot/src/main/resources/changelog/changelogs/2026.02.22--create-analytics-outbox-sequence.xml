@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.32.xsd">
+
+    <changeSet id="system--2026.02.22--createAnalyticsOutboxSequence" author="system">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <sequenceExists sequenceName="analytics_outbox_seq" schemaName="public"/>
+            </not>
+        </preConditions>
+        
+        <!-- Create the missing sequence that JPA expects -->
+        <createSequence
+                sequenceName="analytics_outbox_seq"
+                schemaName="public"
+                startValue="1"
+                incrementBy="1"/>
+        
+        <!-- Update the analytics_outbox table to use the new sequence -->
+        <sql>
+            -- Drop the default value from the outbox_id column
+            ALTER TABLE public.analytics_outbox 
+            ALTER COLUMN outbox_id DROP DEFAULT;
+        </sql>
+        
+        <sql>
+            -- Set the new default value using the sequence
+            ALTER TABLE public.analytics_outbox 
+            ALTER COLUMN outbox_id SET DEFAULT nextval('public.analytics_outbox_seq');
+        </sql>
+        
+        <sql>
+            -- Set the sequence value to match the current max outbox_id + 1
+            SELECT setval('public.analytics_outbox_seq', 
+                   COALESCE((SELECT MAX(outbox_id) FROM public.analytics_outbox), 0) + 1, 
+                   false);
+        </sql>
+        
+        <rollback>
+            <!-- Revert to using the original sequence -->
+            <sql>
+                ALTER TABLE public.analytics_outbox 
+                ALTER COLUMN outbox_id DROP DEFAULT;
+            </sql>
+            
+            <sql>
+                ALTER TABLE public.analytics_outbox 
+                ALTER COLUMN outbox_id SET DEFAULT nextval('public.analytics_outbox_outbox_id_seq');
+            </sql>
+            
+            <dropSequence sequenceName="analytics_outbox_seq" schemaName="public"/>
+        </rollback>
+    </changeSet>
+</databaseChangeLog>

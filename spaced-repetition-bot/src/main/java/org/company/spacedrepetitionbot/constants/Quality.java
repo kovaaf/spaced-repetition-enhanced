@@ -14,4 +14,13 @@ public enum Quality {
     Quality(int quality) {
         this.quality = quality;
     }
+
+    public static Quality fromInt(int value) {
+        for (Quality quality : Quality.values()) {
+            if (quality.getQuality() == value) {
+                return quality;
+            }
+        }
+        throw new IllegalArgumentException("Unknown quality value: " + value);
+    }
 }

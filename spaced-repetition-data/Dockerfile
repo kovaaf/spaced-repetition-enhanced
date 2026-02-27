@@ -1,25 +1,19 @@
-FROM gradle:8.7.0-jdk21-alpine AS build
+# Dockerfile for Spaced Repetition Data Service
+FROM amazoncorretto:17-alpine
 
-WORKDIR /workspace
+# Install curl for healthcheck
+RUN apk add --no-cache curl
 
-# Копируем файлы Gradle
-COPY ./spaced-repetition-data/gradle ./spaced-repetition-data/gradle
-COPY ./spaced-repetition-data/gradlew ./spaced-repetition-data/
-COPY ./spaced-repetition-data/build.gradle.kts ./spaced-repetition-data/
-COPY ./spaced-repetition-data/settings.gradle.kts ./spaced-repetition-data/
+WORKDIR /app
 
-# Делаем gradlew исполняемым
-WORKDIR /workspace/spaced-repetition-data
-RUN chmod +x gradlew
+COPY spaced-repetition-data/build/libs/data-service.jar /app/data-service.jar
 
-# Копируем исходный код модуля
-COPY ./spaced-repetition-data/src ./src
+# JVM Configuration
+ENV JAVA_OPTS="-Xmx256m -Xms64m -XX:+UseContainerSupport -XX:MaxRAMPercentage=50.0"
 
-# Собираем приложение
-RUN ./gradlew build -x test --no-daemon
-
-# Финальный образ
-FROM openjdk:21-jdk-slim
 EXPOSE 9090
-COPY --from=build /workspace/spaced-repetition-data/build/libs/*.jar app.jar
-ENTRYPOINT ["java","-jar","app.jar"]
+
+HEALTHCHECK --interval=15s --timeout=5s --retries=3 --start-period=30s \
+    CMD curl -f http://localhost:8081/health/ready || exit 1
+
+ENTRYPOINT ["java", "-jar", "data-service.jar"]

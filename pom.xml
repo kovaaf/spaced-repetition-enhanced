@@ -7,7 +7,7 @@
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
         <version>3.5.0</version>
-        <relativePath/> <!-- lookup parent from repository -->
+        <relativePath/>
     </parent>
 
 	<groupId>org.company</groupId>
@@ -19,6 +19,9 @@
 
 	<modules>
 		<module>spaced-repetition-bot</module>
+		<module>spaced-repetition-ui</module>
+		<module>spaced-repetition-dto</module>
+		<module>spaced-repetition-protobuf</module>
     </modules>
 
     <properties>
@@ -37,11 +40,9 @@
         <guava.version>33.4.8-jre</guava.version>
         <jacoco-maven-plugin.version>0.8.13</jacoco-maven-plugin.version>
 <!--    Минимальное покрытие тестами:   -->
-        <jacoco.min.coverage>0</jacoco.min.coverage>
+        <jacoco.min.coverage>0.0</jacoco.min.coverage>
         <!-- gRPC и Protobuf версии -->
-        <grpc.version>1.58.0</grpc.version>
-        <protobuf.version>3.25.1</protobuf.version>
-        <protoc.version>3.25.1</protoc.version>
+        <grpc.version>1.75.0</grpc.version>
     </properties>
 
 	<dependencies>

@@ -4,6 +4,7 @@ import org.company.spacedrepetitionbot.constants.Quality;
 import org.company.spacedrepetitionbot.handler.handlers.callback.Callback;
 import org.company.spacedrepetitionbot.service.MessageStateService;
 import org.company.spacedrepetitionbot.service.learning.LearningSessionService;
+import org.company.spacedrepetitionbot.repository.analytics.AnalyticsOutboxRepository;
 import org.company.spacedrepetitionbot.utils.KeyboardManager;
 import org.company.spacedrepetitionbot.utils.MarkdownEscaper;
 import org.springframework.stereotype.Component;
@@ -18,8 +19,9 @@ public class AnswerHardStrategy extends BaseAnswerStrategy {
             MessageStateService messageStateService,
             MarkdownEscaper markdownEscaper,
             LearningSessionService learningSessionService,
+            AnalyticsOutboxRepository analyticsOutboxRepository,
             KeyboardManager keyboardManager) {
-        super(telegramClient, messageStateService, markdownEscaper, learningSessionService, keyboardManager);
+        super(telegramClient, messageStateService, markdownEscaper, learningSessionService, analyticsOutboxRepository, keyboardManager);
     }
 
     @Override

@@ -34,7 +34,7 @@ public class GitService {
         return git;
     }
 
-    private Git getGitInstance() throws GitAPIException {
+    Git getGitInstance() throws GitAPIException {
         Path repoPath = Paths.get(appProperties.getDefaultDeck().getRepo().getPath()).toAbsolutePath();
         File repoDir = repoPath.toFile();
         String repoUrl = appProperties.getDefaultDeck().getRepo().getUrl();

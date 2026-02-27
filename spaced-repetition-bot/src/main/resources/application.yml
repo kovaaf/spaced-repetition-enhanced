@@ -17,7 +17,7 @@ app:
   default-deck:
     name: "Default Shared Deck"
     repo:
-      url: https://github.com/kovaaf/obsidian-git-sync.git
+      url: ${DEFAULT_DECK_REPO_URL}
       branch: main
       path: ./local-repo
       # Пути должны быть полными относительно корня репозитория
@@ -29,7 +29,7 @@ app:
         - Interview/Коллекции и структуры данных
         - Interview/Stream API
         - Interview/БД
-        - Interview/Hibernate & JPA
+#        - Interview/Hibernate & JPA
 #        - Interview/Spring/Модули Spring
         - Interview/Design Patterns
         - Interview/Микросервисы
@@ -39,8 +39,14 @@ app:
       webhook-secret: ${GIT_WEBHOOK_SECRET}
       token: ${GIT_TOKEN}
     sync:
-      initial-enabled: true
-      cron: "0 */30 * * * *"
+      cron: "0 0 * * * *"
+  analytics:
+    outbox:
+      processor:
+        cron: ${ANALYTICS_OUTBOX_PROCESSOR_CRON:'* * * * * *'}
+        batch-size: ${ANALYTICS_OUTBOX_PROCESSOR_BATCH_SIZE:200}
+        max-retries: ${ANALYTICS_OUTBOX_PROCESSOR_MAX_RETRIES:5}
+        initial-delay: ${ANALYTICS_OUTBOX_PROCESSOR_INITIAL_DELAY:1000}
 
 logging:
   level:
@@ -48,7 +54,8 @@ logging:
       telegram: warn
       springframework.jdbc.datasource.init: warn
       hibernate.SQL: warn
-    liquibase: ERROR
+    liquibase: DEBUG
+    org.company.spacedrepetitionbot.service.analytics: INFO
 
 spring:
   application:
@@ -59,6 +66,11 @@ spring:
     username: ${TELEGRAM_BOT_DB_USER:postgres}
     password: ${TELEGRAM_BOT_DB_PASSWORD:postgres}
     driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 3
+      minimum-idle: 1
+      max-lifetime: 900000
+      idle-timeout: 300000
 
   jpa:
     generate-ddl: false
@@ -88,6 +100,27 @@ spring:
         max-attempts: 3
         initial-delay: 1000
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics  # Доступные endpoints
+      base-path: /actuator            # Базовый путь (по умолчанию)
+    health:
+      probes:
+        enabled: true                  # Включить health probes для k8s/containers
+      show-details: when_authorized   # Детали только для авторизованных
+  endpoint:
+    health:
+      show-components: when_authorized # Показывать компоненты только для авторизованных
+      enabled: true
+    metrics:
+      enabled: true
+    info:
+      enabled: true
+  info:
+    env:
+      enabled: true                   # Показывать env info
 
 server:
   port: ${TELEGRAM_BOT_PORT:8080}
@@ -96,9 +129,16 @@ encryption:
   password: ${ENCRYPTION_PASSWORD}
   salt: ${ENCRYPTION_SALT}
 
+git:
+  sync:
+    enabled: true
+
 grpc:
   client:
     myGrpcService:
       address: 'static://localhost:9091'
+      negotiation-type: plaintext
+    analytics-service:
+      address: ${DATA_SERVICE_URL:static://localhost:9091}
       negotiation-type: plaintext
 

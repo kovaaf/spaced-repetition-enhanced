@@ -38,6 +38,7 @@ public class Deck {
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "deck_source_folders", joinColumns = @JoinColumn(name = "deck_id"))
     @Column(name = "folder")
+    @Builder.Default
     private List<String> sourceFolders = new ArrayList<>();
 
     @Override

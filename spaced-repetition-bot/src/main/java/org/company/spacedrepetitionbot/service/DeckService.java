@@ -21,7 +21,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static org.company.spacedrepetitionbot.command.constant.Command.ADD_DECK;
 import static org.company.spacedrepetitionbot.constants.MessageConstants.*;
 import static org.company.spacedrepetitionbot.constants.OtherConstants.DEFAULT_DECK_SUFFIX;
 
@@ -60,7 +59,7 @@ public class DeckService {
             UserInfo owner = getUserInfoOrThrow(userChatId);
 
             if (deckRepository.existsByNameIgnoreCaseAndOwner(deckName, owner)) {
-                return formatErrorMessage(DECK_ALREADY_EXISTS_TEMPLATE, deckName, ADD_DECK.getExtendedDescription());
+                return formatErrorMessage(DECK_ALREADY_EXISTS_SIMPLE, deckName);
             }
 
             Deck newDeck = Deck.builder().name(deckName).owner(owner).build();

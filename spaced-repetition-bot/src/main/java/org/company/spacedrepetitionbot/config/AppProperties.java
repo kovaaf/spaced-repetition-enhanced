@@ -13,6 +13,7 @@ import java.util.List;
 public class AppProperties {
     private DefaultDeckConfig defaultDeck;
     private SyncMode syncMode;
+    private AnalyticsConfig analytics;
 
     @Data
     public static class DefaultDeckConfig {
@@ -46,5 +47,23 @@ public class AppProperties {
             KAFKA,
             DIRECT
         }
+    }
+
+    @Data
+    public static class OutboxConfig {
+        private ProcessorConfig processor;
+    }
+
+    @Data
+    public static class ProcessorConfig {
+        private String cron;
+        private int batchSize;
+        private int maxRetries;
+        private long initialDelay;
+    }
+
+    @Data
+    public static class AnalyticsConfig {
+        private OutboxConfig outbox;
     }
 }

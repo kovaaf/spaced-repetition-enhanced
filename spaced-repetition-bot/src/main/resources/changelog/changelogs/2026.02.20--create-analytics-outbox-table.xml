@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.32.xsd">
+
+    <changeSet id="system--2026.02.20--createAnalyticsOutboxTable" author="system">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="analytics_outbox" schemaName="public"/>
+            </not>
+        </preConditions>
+        <createTable tableName="analytics_outbox" schemaName="public">
+            <column name="outbox_id" type="BIGSERIAL">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="user_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deck_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="card_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="quality" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+            <column name="event_timestamp" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP" defaultValue="now()">
+                <constraints nullable="false"/>
+            </column>
+            <column name="processed_at" type="TIMESTAMP"/>
+            <column name="retry_count" type="INTEGER" defaultValue="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_retry_at" type="TIMESTAMP"/>
+            <column name="next_retry_at" type="TIMESTAMP"/>
+            <column name="status" type="VARCHAR(20)" defaultValue="PENDING">
+                <constraints nullable="false"/>
+            </column>
+            <column name="error_message" type="TEXT"/>
+        </createTable>
+        
+        <sql>
+            ALTER TABLE public.analytics_outbox ADD CONSTRAINT ck_analytics_outbox_quality 
+            CHECK (quality IN (0, 3, 4, 5));
+        </sql>
+        
+        <sql>
+            ALTER TABLE public.analytics_outbox ADD CONSTRAINT ck_analytics_outbox_status 
+            CHECK (status IN ('PENDING', 'PROCESSING', 'COMPLETED', 'FAILED', 'DLQ'));
+        </sql>
+        
+        <createIndex tableName="analytics_outbox" indexName="idx_outbox_status_retry" schemaName="public">
+            <column name="status"/>
+            <column name="next_retry_at"/>
+        </createIndex>
+        
+        <createIndex tableName="analytics_outbox" indexName="idx_outbox_created" schemaName="public">
+            <column name="created_at"/>
+        </createIndex>
+        
+        <createIndex tableName="analytics_outbox" indexName="idx_outbox_user" schemaName="public">
+            <column name="user_id"/>
+        </createIndex>
+        
+        <sql>
+            COMMENT ON TABLE public.analytics_outbox IS 'Transactional outbox for analytics events with retry mechanism';
+            COMMENT ON COLUMN public.analytics_outbox.next_retry_at IS 'When to retry failed events (exponential backoff)';
+            COMMENT ON COLUMN public.analytics_outbox.status IS 'DLQ = Dead Letter Queue (max retries exceeded)';
+        </sql>
+    </changeSet>
+</databaseChangeLog>

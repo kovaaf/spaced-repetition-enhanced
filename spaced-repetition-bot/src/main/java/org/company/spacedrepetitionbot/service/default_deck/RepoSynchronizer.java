@@ -7,6 +7,8 @@ import org.company.spacedrepetitionbot.model.Deck;
 import org.company.spacedrepetitionbot.service.DeckService;
 import org.company.spacedrepetitionbot.service.default_deck.event.SyncEventDTO;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.errors.TransportException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,10 +36,17 @@ public class RepoSynchronizer {
                 }
             }
         } catch (Exception e) {
+            log.debug("Sync failed with exception type: {}, message: {}", e.getClass().getSimpleName(), e.getMessage());
+            
+            // Log specific exception details for common auth/network failures
+            if (e instanceof TransportException) {
+                log.debug("TransportException details - likely network or authentication issue", e);
+            } else if (e instanceof GitAPIException) {
+                log.debug("GitAPIException details - Git operation failed", e);
+            }
             handleSyncError(deck, e);
         }
     }
-
     private void executeSync(Git git, Deck deck, SyncEventDTO event) throws Exception {
         log.debug("Sync started for deck: {}", deck.getName());
         String latestCommit = gitSyncOperator.getLatestCommit(git);

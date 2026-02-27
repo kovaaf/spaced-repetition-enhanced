@@ -18,9 +18,12 @@ public class Card {
     @SequenceGenerator(name = "card_seq", sequenceName = "card_seq", allocationSize = 1)
     private Long cardId;
 
-    private String front; // TODO: отдельный класс для вопроса
+    // TODO: отдельный класс для вопроса
+    private String front;
 
-    private String back; // TODO: отдельный класс для ответа
+    // TODO: отдельный класс для ответа
+    // TODO максимальная длина сообщения 4096 в тг
+    private String back;
 
     @Builder.Default
     private Integer repeatCount = 0;

@@ -32,4 +32,28 @@ build/
 ### VS Code ###
 .vscode/
 /config.yml
+
+### Personal info ###
 /local-repo/
+.env
+
+### Agentic ###
+/.opencode/
+AGENTS.md
+/opencode.jsonc
+/docs/
+/.sisyphus/
+*.sh
+nul
+.gitignore
+
+### LSP ###
+classpath.txt
+*/bin/
+
+### Test artifacts ###
+/test-reports/
+start.bat
+simple_start.bat
+/scripts/
+*.log

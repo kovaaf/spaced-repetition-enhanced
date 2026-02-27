@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.32.xsd">
+
+    <changeSet id="system--2026.02.20--createAnalyticsDlqTable" author="system">
+        <createTable tableName="analytics_dlq">
+            <column name="dlq_id" type="BIGSERIAL">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="outbox_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="user_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deck_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="card_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="quality" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+            <column name="event_timestamp" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="failure_reason" type="TEXT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="retry_count" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP" defaultValue="now()">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_attempt_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        
+        <addForeignKeyConstraint baseTableName="analytics_dlq"
+                                 baseColumnNames="outbox_id"
+                                 constraintName="fk_analytics_dlq_outbox"
+                                 referencedTableName="analytics_outbox"
+                                 referencedColumnNames="outbox_id"/>
+        
+        <sql>
+            COMMENT ON TABLE analytics_dlq IS 'Dead Letter Queue for unrecoverable analytics events';
+        </sql>
+    </changeSet>
+</databaseChangeLog>

@@ -10,6 +10,9 @@ import org.company.spacedrepetitionbot.model.Card;
 import org.company.spacedrepetitionbot.model.LearningSession;
 import org.company.spacedrepetitionbot.service.MessageStateService;
 import org.company.spacedrepetitionbot.service.learning.LearningSessionService;
+import org.company.spacedrepetitionbot.repository.analytics.AnalyticsOutboxRepository;
+import org.company.spacedrepetitionbot.model.analytics.AnalyticsOutbox;
+import org.company.spacedrepetitionbot.constants.OutboxStatus;
 import org.company.spacedrepetitionbot.utils.KeyboardManager;
 import org.company.spacedrepetitionbot.utils.MarkdownEscaper;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
@@ -20,6 +23,7 @@ import org.telegram.telegrambots.meta.generics.TelegramClient;
 @Slf4j
 public abstract class BaseAnswerStrategy extends BaseEditCallbackStrategy {
     private final LearningSessionService learningSessionService;
+    private final AnalyticsOutboxRepository analyticsOutboxRepository;
     private final KeyboardManager keyboardManager;
 
     protected BaseAnswerStrategy(
@@ -27,9 +31,11 @@ public abstract class BaseAnswerStrategy extends BaseEditCallbackStrategy {
             MessageStateService messageStateService,
             MarkdownEscaper markdownEscaper,
             LearningSessionService learningSessionService,
+            AnalyticsOutboxRepository analyticsOutboxRepository,
             KeyboardManager keyboardManager) {
         super(telegramClient, messageStateService, markdownEscaper);
         this.learningSessionService = learningSessionService;
+        this.analyticsOutboxRepository = analyticsOutboxRepository;
         this.keyboardManager = keyboardManager;
     }
 
@@ -44,6 +50,21 @@ public abstract class BaseAnswerStrategy extends BaseEditCallbackStrategy {
             Long sessionId = Long.valueOf(getCallbackDataByIndex(callbackQuery.getData(), 3));
 
             Card updatedCard = learningSessionService.updateCardWithAnswer(cardId, getQuality());
+            // Record analytics outbox event
+            try {
+                AnalyticsOutbox outboxRecord = AnalyticsOutbox.builder()
+                    .userId(updatedCard.getDeck().getOwner().getUserChatId())
+                    .deckId(updatedCard.getDeck().getDeckId())
+                    .cardId(updatedCard.getCardId())
+                    .quality(getQuality().getQuality())
+                    .eventTimestamp(java.time.LocalDateTime.now())
+                    .status(OutboxStatus.PENDING)
+                    .build();
+                analyticsOutboxRepository.save(outboxRecord);
+            } catch (Exception e) {
+                log.error("Failed to save analytics outbox record for card {}: {}", cardId, e.getMessage());
+                // Do not throw - answer processing must continue
+            }
             if (updatedCard.getStatus() != Status.NEW &&
                     updatedCard.getStatus() != Status.LEARNING &&
                     updatedCard.getStatus() != Status.RELEARNING) {

@@ -20,8 +20,10 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.ignoringRequestMatchers("/webhook/github").disable())
-                .authorizeHttpRequests(auth -> auth.requestMatchers("/webhook/github", "/admin/force-sync")
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/webhook/github", "/admin/force-sync", "/actuator/health")
                         .permitAll()
+                        .requestMatchers("/actuator/**").authenticated()
                         .anyRequest()
                         .authenticated());
         return http.build();

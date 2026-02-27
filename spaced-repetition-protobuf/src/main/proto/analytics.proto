@@ -1,0 +1,64 @@
+syntax = "proto3";
+
+package org.company.spacedrepetitiondata;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
+
+option java_package = "org.company.spacedrepetitiondata.grpc";
+option java_outer_classname = "AnalyticsProto";
+
+enum Quality {
+  AGAIN = 0;
+  HARD = 3;
+  GOOD = 4;
+  EASY = 5;
+}
+
+message AnswerEvent {
+  string user_id = 1;
+  string deck_id = 2;
+  string card_id = 3;
+  Quality quality = 4;
+  google.protobuf.Timestamp timestamp = 5;
+  optional string user_name = 6;  // Optional: user display name
+  optional string deck_name = 7;  // Optional: deck display name
+  optional string card_title = 8; // Optional: card title/description
+}
+
+message AnalyticsRequest {
+  string user_id = 1;
+  google.protobuf.Timestamp start_time = 2;
+  google.protobuf.Timestamp end_time = 3;
+}
+
+message StreamAnalyticsRequest {
+  optional string user_id = 1;           // Optional: filter by user ID
+  optional google.protobuf.Timestamp start_time = 2;  // Optional: filter events after this time
+  optional google.protobuf.Timestamp end_time = 3;    // Optional: filter events before this time
+}
+
+message StreamAnalyticsResponse {
+  AnswerEvent event = 1;  // Individual answer event streamed in real-time
+}
+
+message AnalyticsResponse {
+  repeated AnswerEvent events = 1;
+  int32 total_count = 2;
+}
+
+message User {
+  int64 id = 1;
+  string name = 2;
+}
+
+message UsersResponse {
+  repeated User users = 1;
+}
+
+service AnalyticsService {
+  rpc RecordAnswerEvent(AnswerEvent) returns (google.protobuf.Empty);
+  rpc GetAnalytics(AnalyticsRequest) returns (AnalyticsResponse);
+  rpc GetUsers(google.protobuf.Empty) returns (UsersResponse);
+  rpc StreamAnalytics(StreamAnalyticsRequest) returns (stream StreamAnalyticsResponse);
+}

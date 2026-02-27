@@ -1,0 +1,18 @@
+Manifest-Version: 1.0
+Created-By: Maven JAR Plugin 3.4.2
+Build-Jdk-Spec: 21
+Class-Path: lib/grpc-netty-shaded-1.75.0.jar lib/grpc-util-1.75.0.jar li
+ b/grpc-core-1.75.0.jar lib/gson-2.13.1.jar lib/annotations-4.1.1.4.jar 
+ lib/grpc-context-1.75.0.jar lib/guava-33.3.1-android.jar lib/failureacc
+ ess-1.0.2.jar lib/listenablefuture-9999.0-empty-to-avoid-conflict-with-
+ guava.jar lib/j2objc-annotations-3.0.0.jar lib/error_prone_annotations-
+ 2.30.0.jar lib/perfmark-api-0.27.0.jar lib/grpc-api-1.75.0.jar lib/anim
+ al-sniffer-annotations-1.24.jar lib/grpc-protobuf-1.75.0.jar lib/jsr305
+ -3.0.2.jar lib/protobuf-java-3.25.8.jar lib/proto-google-common-protos-
+ 2.59.2.jar lib/grpc-protobuf-lite-1.75.0.jar lib/grpc-stub-1.75.0.jar l
+ ib/postgresql-42.7.5.jar lib/checker-qual-3.48.3.jar lib/slf4j-api-2.0.
+ 17.jar lib/slf4j-simple-2.0.17.jar
+Implementation-Title: spaced-repetition-ui
+Implementation-Version: 0.0.1-SNAPSHOT
+Main-Class: org.company.spacedrepetition.ui.StatisticsViewer
+
