@@ -86,12 +86,12 @@ jobs:
           TELEGRAM_BOT_PORT=${{ secrets.TELEGRAM_BOT_PORT }}
           TELEGRAM_BOT_NAME=SpacedRepetitionBot
           TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_BOT_CREATOR_ID=${{ secrets.TELEGRAM_BOT_CREATOR_ID }}
           GIT_SSH_PASSPHRASE=${{ secrets.GIT_SSH_PASSPHRASE }}
           GIT_WEBHOOK_SECRET=${{ secrets.GIT_WEBHOOK_SECRET }}
           GIT_TOKEN=${{ secrets.GIT_TOKEN }}
           ENCRYPTION_PASSWORD=${{ secrets.ENCRYPTION_PASSWORD }}
           ENCRYPTION_SALT=${{ secrets.ENCRYPTION_SALT }}
+          DEFAULT_DECK_REPO_URL=${{ secrets.DEFAULT_DECK_REPO_URL }}
           EOF
 
           # Защищаем файл перед отправкой
