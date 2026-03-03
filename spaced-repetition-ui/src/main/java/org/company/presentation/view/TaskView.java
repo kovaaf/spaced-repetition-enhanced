@@ -12,5 +12,7 @@ public interface TaskView {
     void onTaskCancelled();
     void onTaskCompleted(String result);
     void onDataLoaded(List<AnswerEvent> data);
-    void addEvent(AnswerEvent event); // новый метод
+    void addEvent(AnswerEvent event);
+    void clearTable();
+    void onServerSwitchFailed(String failedServerName, String currentServerName);
 }

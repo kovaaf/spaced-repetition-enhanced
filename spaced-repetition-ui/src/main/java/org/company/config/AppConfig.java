@@ -7,19 +7,17 @@ import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.company.application.FilterController;
-import org.company.domain.DataService;
-import org.company.domain.GrpcDataService;
 import org.company.domain.TimeFilter;
 import org.company.infrastructure.logging.UILogAppender;
 import org.company.presentation.MainFrame;
 
 import javax.swing.*;
+import java.util.List;
 
 @Slf4j
 public class AppConfig {
 
     public static void createAndShowMainFrame() {
-        // Устанавливаем FlatDarkLaf по умолчанию
         try {
             UIManager.setLookAndFeel(new FlatDarkLaf());
         } catch (Exception e) {
@@ -31,12 +29,14 @@ public class AppConfig {
             }
         }
 
-        // Загружаем конфигурацию
         AppProperties props = new AppProperties();
-        DataService dataService = new GrpcDataService(props.getGrpcServerUrl());
+        List<ServerInfo> servers = props.getServers();
+        String defaultUrl = props.getDefaultServerUrl();
 
-        FilterController filterController = new FilterController(dataService);
-        MainFrame mainFrame = new MainFrame(filterController);
+        // Создаём контроллер с временным сервисом (будет заменён в ServerManager)
+        FilterController filterController = new FilterController(null);
+
+        MainFrame mainFrame = new MainFrame(filterController, servers, defaultUrl);
         filterController.setView(mainFrame);
 
         // Настройка Log4j2 аппендера для UI
@@ -53,6 +53,7 @@ public class AppConfig {
         mainFrame.setVisible(true);
         log.info("Приложение запущено");
 
+        // Загружаем данные при старте (после того как ServerManager установил соединение)
         SwingUtilities.invokeLater(() -> filterController.applyFilter(TimeFilter.LAST_DAY));
     }
 }

@@ -27,7 +27,6 @@ public class DataTable extends JTable {
             sorter.setSortable(i, false);
         }
 
-        // Сортировка по умолчанию: столбец Date (индекс 4) в порядке убывания
         this.sortHandler = new TableSortHandler(sorter, 4, SortOrder.DESCENDING);
 
         JTableHeader header = getTableHeader();
@@ -41,7 +40,6 @@ public class DataTable extends JTable {
             }
         });
 
-        // Устанавливаем рендерер для столбца Quality (индекс 3)
         TableColumn qualityColumn = getColumnModel().getColumn(3);
         qualityColumn.setCellRenderer(new DefaultTableCellRenderer() {
             @Override
@@ -74,6 +72,10 @@ public class DataTable extends JTable {
         model.addEvent(event);
     }
 
+    public void clearData() {
+        model.clearData();
+    }
+
     private static class AnswerTableModel extends AbstractTableModel {
         private final String[] columns = {"User", "Deck", "Card", "Quality", "Date"};
         private final List<AnswerEvent> data = new ArrayList<>();
@@ -89,6 +91,11 @@ public class DataTable extends JTable {
         public void addEvent(AnswerEvent event) {
             data.add(event);
             fireTableRowsInserted(data.size() - 1, data.size() - 1);
+        }
+
+        public void clearData() {
+            data.clear();
+            fireTableDataChanged();
         }
 
         @Override
@@ -113,7 +120,7 @@ public class DataTable extends JTable {
                 case 0 -> e.userName() != null ? e.userName() : e.userId();
                 case 1 -> e.deckName() != null ? e.deckName() : e.deckId();
                 case 2 -> e.cardTitle() != null ? e.cardTitle() : e.cardId();
-                case 3 -> e.quality(); // возвращаем Integer
+                case 3 -> e.quality();
                 case 4 -> timeFormatter.format(e.timestamp());
                 default -> null;
             };

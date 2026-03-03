@@ -3,6 +3,8 @@ package org.company.presentation;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.company.application.FilterController;
+import org.company.application.ServerManager;
+import org.company.config.ServerInfo;
 import org.company.domain.AnswerEvent;
 import org.company.domain.GrpcDataService;
 import org.company.presentation.components.DataTable;
@@ -15,10 +17,12 @@ import org.company.presentation.view.TaskView;
 import javax.swing.*;
 import java.awt.*;
 import java.util.List;
+import java.util.ArrayList;
 
 @Slf4j
 public class MainFrame extends JFrame implements TaskView {
     private final FilterController filterController;
+    private final ServerManager serverManager;
     private final DataTable dataTable;
     private final StatusBar statusBar;
     @Getter
@@ -27,16 +31,17 @@ public class MainFrame extends JFrame implements TaskView {
     private boolean logsVisible = false;
     private int lastDividerLocation = 0;
 
-    // Компоненты для меню тем
     private ButtonGroup themeGroup;
-    private JRadioButtonMenuItem lightThemeItem;
-    private JRadioButtonMenuItem darkThemeItem;
+    private ButtonGroup serverGroup;
+    private List<JRadioButtonMenuItem> themeItems = new ArrayList<>();
+    private List<JRadioButtonMenuItem> serverItems = new ArrayList<>();
 
-    public MainFrame(FilterController filterController) {
+    public MainFrame(FilterController filterController, List<ServerInfo> servers, String defaultServerUrl) {
         this.filterController = filterController;
         this.dataTable = new DataTable();
         this.statusBar = new StatusBar(this);
         this.logPanel = new LogPanel();
+        this.serverManager = new ServerManager(servers, filterController, this, defaultServerUrl);
 
         JScrollPane tableScroll = new JScrollPane(dataTable);
         tableScroll.setBorder(BorderFactory.createTitledBorder("Данные"));
@@ -44,24 +49,12 @@ public class MainFrame extends JFrame implements TaskView {
         splitPane.setResizeWeight(1.0);
 
         initUI();
-        createMenuBar(); // Добавляем меню
+        createMenuBar();
 
         addWindowListener(new java.awt.event.WindowAdapter() {
             @Override
             public void windowClosing(java.awt.event.WindowEvent e) {
-                // Останавливаем текущую загрузку и стриминг (если активны)
-                filterController.cancelLoading();
-
-                // Закрываем gRPC канал в отдельном потоке, чтобы не блокировать EDT
-                if (filterController.getDataService() instanceof GrpcDataService) {
-                    new Thread(() -> {
-                        try {
-                            ((GrpcDataService) filterController.getDataService()).shutdown();
-                        } catch (InterruptedException ex) {
-                            Thread.currentThread().interrupt();
-                        }
-                    }, "grpc-shutdown-thread").start();
-                }
+                serverManager.shutdown();
             }
         });
     }
@@ -82,47 +75,51 @@ public class MainFrame extends JFrame implements TaskView {
 
     private void createMenuBar() {
         JMenuBar menuBar = new JMenuBar();
+
+        // Меню Theme
         JMenu themeMenu = new JMenu("Theme");
-
         themeGroup = new ButtonGroup();
+        String[] themeNames = ThemeManager.getAvailableThemeNames();
 
-        // Создаём пункты для светлой и тёмной темы
-        lightThemeItem = new JRadioButtonMenuItem("Light");
-        darkThemeItem = new JRadioButtonMenuItem("Dark");
-
-        lightThemeItem.addActionListener(e -> {
-            if (lightThemeItem.isSelected()) {
-                ThemeManager.applyTheme("Light");
+        for (String name : themeNames) {
+            JRadioButtonMenuItem item = new JRadioButtonMenuItem(name);
+            item.addActionListener(e -> {
+                if (item.isSelected()) {
+                    ThemeManager.applyTheme(name);
+                }
+            });
+            themeGroup.add(item);
+            themeMenu.add(item);
+            themeItems.add(item);
+            if (name.equals("Dark")) {
+                item.setSelected(true);
             }
-        });
-
-        darkThemeItem.addActionListener(e -> {
-            if (darkThemeItem.isSelected()) {
-                ThemeManager.applyTheme("Dark");
-            }
-        });
-
-        themeGroup.add(lightThemeItem);
-        themeGroup.add(darkThemeItem);
-        themeMenu.add(lightThemeItem);
-        themeMenu.add(darkThemeItem);
-
-        menuBar.add(themeMenu);
-        setJMenuBar(menuBar);
-
-        // Устанавливаем выбранный пункт в соответствии с текущей темой
-        updateSelectedTheme();
-    }
-
-    private void updateSelectedTheme() {
-        // Определяем текущую тему по имени LookAndFeel
-        LookAndFeel current = UIManager.getLookAndFeel();
-        String name = current.getName();
-        if (name.contains("Dark") || name.contains("dark")) {
-            darkThemeItem.setSelected(true);
-        } else {
-            lightThemeItem.setSelected(true);
         }
+        menuBar.add(themeMenu);
+
+        // Меню Source Server
+        JMenu serverMenu = new JMenu("Source Server");
+        serverGroup = new ButtonGroup();
+        List<ServerInfo> servers = serverManager.getServers();
+        String currentUrl = serverManager.getCurrentServerUrl();
+
+        for (ServerInfo server : servers) {
+            JRadioButtonMenuItem item = new JRadioButtonMenuItem(server.name());
+            item.addActionListener(e -> {
+                if (item.isSelected()) {
+                    serverManager.switchToServer(server.name());
+                }
+            });
+            serverGroup.add(item);
+            serverMenu.add(item);
+            serverItems.add(item);
+            if (server.url().equals(currentUrl)) {
+                item.setSelected(true);
+            }
+        }
+        menuBar.add(serverMenu);
+
+        setJMenuBar(menuBar);
     }
 
     public void toggleLogs() {
@@ -203,5 +200,23 @@ public class MainFrame extends JFrame implements TaskView {
     @Override
     public void addEvent(AnswerEvent event) {
         dataTable.addEvent(event);
+    }
+
+    @Override
+    public void clearTable() {
+        dataTable.clearData();
+    }
+
+    @Override
+    public void onServerSwitchFailed(String failedServerName, String currentServerName) {
+        // Возвращаем выделение в меню на текущий сервер
+        SwingUtilities.invokeLater(() -> {
+            for (JRadioButtonMenuItem item : serverItems) {
+                if (item.getText().equals(currentServerName)) {
+                    item.setSelected(true);
+                    break;
+                }
+            }
+        });
     }
 }

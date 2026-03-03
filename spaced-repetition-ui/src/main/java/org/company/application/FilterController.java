@@ -8,6 +8,7 @@ import org.company.infrastructure.swing.DelegatingSwingWorker;
 import org.company.presentation.view.TaskView;
 
 import javax.swing.*;
+import java.lang.reflect.Field;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -103,5 +104,18 @@ public class FilterController {
             worker.cancel(true);
         }
         stopStreaming();
+    }
+
+    public void setDataService(DataService dataService) {
+        // Останавливаем текущие операции
+        cancelLoading();
+        // Заменяем сервис
+        try {
+            Field field = FilterController.class.getDeclaredField("dataService");
+            field.setAccessible(true);
+            field.set(this, dataService);
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            log.error("Failed to set dataService", e);
+        }
     }
 }

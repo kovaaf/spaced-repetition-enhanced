@@ -34,7 +34,6 @@ public class GrpcDataService implements DataService {
         log.info("gRPC channel created to {}", target);
     }
 
-    @Override
     public List<AnswerEvent> fetchData(TimeFilter filter) throws Exception {
         try {
             Instant start = calculateStartTime(filter, Instant.now());
@@ -45,7 +44,9 @@ public class GrpcDataService implements DataService {
                     .setEndTime(Timestamp.newBuilder().setSeconds(end.getEpochSecond()).setNanos(end.getNano()))
                     .build();
 
-            AnalyticsProto.AnalyticsResponse response = blockingStub.getAnalytics(request);
+            // Добавляем таймаут
+            AnalyticsProto.AnalyticsResponse response = blockingStub.withDeadlineAfter(10, TimeUnit.SECONDS)
+                    .getAnalytics(request);
             List<AnswerEvent> events = new ArrayList<>();
             for (AnalyticsProto.AnswerEvent protoEvent : response.getEventsList()) {
                 events.add(toAnswerEvent(protoEvent));

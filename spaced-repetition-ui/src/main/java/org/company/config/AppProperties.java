@@ -5,12 +5,16 @@ import lombok.extern.slf4j.Slf4j;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 @Slf4j
 public class AppProperties {
     @Getter
-    private final String grpcServerUrl;
+    private final List<ServerInfo> servers = new ArrayList<>();
+    @Getter
+    private final String defaultServerUrl;
 
     public AppProperties() {
         Yaml yaml = new Yaml();
@@ -23,22 +27,36 @@ public class AppProperties {
                 throw new RuntimeException("application.yml is empty");
             }
 
-            // Извлекаем data.service.url
             Map<String, Object> data = (Map<String, Object>) config.get("data");
             if (data == null) {
                 throw new RuntimeException("Missing 'data' section in application.yml");
             }
+
+            // Загружаем список серверов
+            List<Map<String, String>> serversList = (List<Map<String, String>>) data.get("servers");
+            if (serversList != null) {
+                for (Map<String, String> serverMap : serversList) {
+                    String name = serverMap.get("name");
+                    String url = serverMap.get("url");
+                    if (name != null && url != null) {
+                        servers.add(new ServerInfo(name, url));
+                    }
+                }
+            }
+
+            // URL по умолчанию (берётся из data.service.url или первого сервера в списке)
             Map<String, Object> service = (Map<String, Object>) data.get("service");
-            if (service == null) {
-                throw new RuntimeException("Missing 'service' section under 'data' in application.yml");
+            if (service != null && service.get("url") != null) {
+                defaultServerUrl = (String) service.get("url");
+            } else if (!servers.isEmpty()) {
+                defaultServerUrl = servers.get(0).url();
+            } else {
+                throw new RuntimeException("No server configuration found in application.yml");
             }
-            this.grpcServerUrl = (String) service.get("url");
-            if (grpcServerUrl == null || grpcServerUrl.isEmpty()) {
-                throw new RuntimeException("data.service.url is not configured or empty");
-            }
+
+            log.info("Loaded {} servers, default URL: {}", servers.size(), defaultServerUrl);
         } catch (Exception e) {
             throw new RuntimeException("Failed to load configuration: " + e.getMessage(), e);
         }
-        log.info("Loaded gRPC server URL: {}", grpcServerUrl);
     }
 }
