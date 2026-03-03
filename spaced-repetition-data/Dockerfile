@@ -11,8 +11,16 @@ COPY spaced-repetition-data/gradle ./gradle
 COPY spaced-repetition-data/build.gradle .
 COPY spaced-repetition-data/src ./src
 
-# Build the application (skip tests for faster build)
+# Make gradlew executable
 RUN chmod +x gradlew
+
+# Diagnostic: list proto files to verify they exist
+RUN echo "Checking proto files:" && find spaced-repetition-protobuf -name "*.proto" || echo "No proto files found"
+
+# Generate protobuf classes explicitly
+RUN ./gradlew generateProto
+
+# Build the application (skip tests)
 RUN ./gradlew clean build -x test
 
 # Runtime stage

@@ -52,12 +52,15 @@ jobs:
 
       - name: Commit the badge (if it changed)
         run: |
-          git config --global user.name github-actions
-          git config --global user.email github-actions@github.com
-          git remote set-url origin https://x-access-token:${{ secrets.GIT_TOKEN }}@github.com/${{ github.repository }}.git
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
           git add -A
-          git commit -m "Update coverage badges" || exit 0
-          git push --force origin HEAD:badges-branch
+          if ! git diff --cached --quiet; then
+            git commit -m "Update coverage badges"
+            git push --force "https://${{ secrets.GIT_TOKEN }}@github.com/${{ github.repository }}.git" HEAD:badges-branch
+          else
+            echo "No changes to commit"
+          fi
 
       - name: Upload Spaced Repetition Bot Badge to Gist
         uses: exuanbo/actions-deploy-gist@v1
