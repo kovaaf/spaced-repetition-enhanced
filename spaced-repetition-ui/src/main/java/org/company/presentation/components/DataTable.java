@@ -3,9 +3,7 @@ package org.company.presentation.components;
 import org.company.domain.AnswerEvent;
 
 import javax.swing.*;
-import javax.swing.table.AbstractTableModel;
-import javax.swing.table.JTableHeader;
-import javax.swing.table.TableRowSorter;
+import javax.swing.table.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.time.ZoneId;
@@ -42,6 +40,29 @@ public class DataTable extends JTable {
                 }
             }
         });
+
+        // Устанавливаем рендерер для столбца Quality (индекс 3)
+        TableColumn qualityColumn = getColumnModel().getColumn(3);
+        qualityColumn.setCellRenderer(new DefaultTableCellRenderer() {
+            @Override
+            protected void setValue(Object value) {
+                if (value instanceof Integer) {
+                    setText(qualityToString((Integer) value));
+                } else {
+                    super.setValue(value);
+                }
+            }
+        });
+    }
+
+    private String qualityToString(int quality) {
+        return switch (quality) {
+            case 0 -> "Again";
+            case 3 -> "Hard";
+            case 4 -> "Good";
+            case 5 -> "Easy";
+            default -> String.valueOf(quality);
+        };
     }
 
     public void setData(List<AnswerEvent> data) {
@@ -92,25 +113,19 @@ public class DataTable extends JTable {
                 case 0 -> e.userName() != null ? e.userName() : e.userId();
                 case 1 -> e.deckName() != null ? e.deckName() : e.deckId();
                 case 2 -> e.cardTitle() != null ? e.cardTitle() : e.cardId();
-                case 3 -> qualityToString(e.quality());
+                case 3 -> e.quality(); // возвращаем Integer
                 case 4 -> timeFormatter.format(e.timestamp());
                 default -> null;
             };
         }
 
-        private String qualityToString(int quality) {
-            return switch (quality) {
-                case 0 -> "Again";
-                case 3 -> "Hard";
-                case 4 -> "Good";
-                case 5 -> "Easy";
-                default -> String.valueOf(quality);
-            };
-        }
-
         @Override
         public Class<?> getColumnClass(int columnIndex) {
-            return String.class;
+            return switch (columnIndex) {
+                case 0, 1, 2, 4 -> String.class;
+                case 3 -> Integer.class;
+                default -> Object.class;
+            };
         }
     }
 }
