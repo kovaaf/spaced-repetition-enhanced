@@ -68,6 +68,9 @@ jobs:
           chmod +x gradlew
           ./gradlew clean build
 
+      - name: Verify JAR exists
+        run: ls -la spaced-repetition-data/build/libs/
+
       - name: Build and Push Data Image
         uses: docker/build-push-action@v3
         with:
