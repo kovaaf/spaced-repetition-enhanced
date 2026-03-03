@@ -18,6 +18,9 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
+      - name: Install protobuf module
+        run: mvn -B install -pl spaced-repetition-protobuf -am
+
       - name: Build with Maven
         env:
           GIT_TOKEN: ${{ secrets.GIT_TOKEN }}

@@ -121,35 +121,37 @@ jobs:
           username: "github-spaced-repetition"
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            set -e  # Немедленный выход при ошибке
-            trap 'rm -f .env' EXIT  # Гарантированное удаление .env при выходе
+            set -e
+            trap 'rm -f .env' EXIT
             echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
             
-            # Обновляем только измененные сервисы
-            if [ '${{ needs.detect-changes.outputs.docker-compose }}' = 'true' ]; then
-              # При изменении compose перезапускаем весь стек
-              echo "Full stack update"
-              docker compose down
+            # Проверяем, существуют ли уже контейнеры (по имени)
+            if docker ps -a --format '{{.Names}}' | grep -q "spaced-repetition-bot-db"; then
+              # Сервисы уже есть - обновляем только изменённые
+              if [ '${{ needs.detect-changes.outputs.docker-compose }}' = 'true' ]; then
+                docker compose down
+                docker compose pull --quiet
+                docker compose up -d --force-recreate --remove-orphans
+              else
+                services_to_update=()
+                [ '${{ needs.detect-changes.outputs.spaced-repetition-bot }}' = 'true' ] && services_to_update+=("spaced-repetition-bot")
+                [ '${{ needs.detect-changes.outputs.spaced-repetition-data }}' = 'true' ] && services_to_update+=("spaced-repetition-data")
+                for service in "${services_to_update[@]}"; do
+                  docker compose pull --quiet $service
+                  docker compose up -d --no-deps --force-recreate --remove-orphans $service
+                done
+              fi
+            else
+              # Контейнеров нет - запускаем весь стек
               docker compose pull --quiet
               docker compose up -d --force-recreate --remove-orphans
-            else
-              echo "Partial update"
-              services_to_update=()
-              [ '${{ needs.detect-changes.outputs.spaced-repetition-bot }}' = 'true' ] && services_to_update+=("spaced-repetition-bot")
-              [ '${{ needs.detect-changes.outputs.spaced-repetition-data }}' = 'true' ] && services_to_update+=("spaced-repetition-data")
-            
-              for service in "${services_to_update[@]}"; do
-                echo "Updating $service"
-                docker compose pull --quiet $service
-                docker compose up -d --no-deps --force-recreate --remove-orphans $service
-              done
             fi
             
             echo "Current containers:"
             docker ps -a
             
             echo "Cleaning project images..."
-            docker image prune -a -f # удалить все неиспользуемые образы
+            docker image prune -a -f
             
       - name: Clean local .env
         run: rm -f .env
