@@ -59,7 +59,7 @@ jobs:
         with:
           file: spaced-repetition-bot/Dockerfile
           push: true
-          tags: ouidockeruser/spaced-repetition-bot:latest
+          tags: ouidockeruser/spaced-repetition-bot-enhanced:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -69,7 +69,7 @@ jobs:
         with:
           file: spaced-repetition-data/Dockerfile
           push: true
-          tags: ouidockeruser/spaced-repetition-data:latest
+          tags: ouidockeruser/spaced-repetition-data-enhanced:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
