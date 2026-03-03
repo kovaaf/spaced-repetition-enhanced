@@ -79,6 +79,8 @@ jobs:
           tags: ouidockeruser/spaced-repetition-data-enhanced:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          build-args: |
+            BUILD_TIME=${{ github.run_id }}
 
   deploy:
     name: Deploy to remote server

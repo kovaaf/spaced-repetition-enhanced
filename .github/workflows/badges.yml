@@ -34,10 +34,6 @@ jobs:
         working-directory: ./spaced-repetition-data
         run: ./gradlew test jacocoTestReport
 
-      - name: Build and test Data Module
-        working-directory: ./spaced-repetition-data
-        run: ./gradlew test jacocoTestReport
-
       - name: Generate Coverage Badges for Spaced Repetition Bot
         id: jacocoSpacedRepetitionBot
         uses: cicirello/jacoco-badge-generator@v2

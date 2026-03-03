@@ -1,6 +1,8 @@
 # Dockerfile for Spaced Repetition Data Service
 FROM amazoncorretto:17-alpine
 
+ARG BUILD_TIME
+
 # Install curl for healthcheck
 RUN apk add --no-cache curl
 
