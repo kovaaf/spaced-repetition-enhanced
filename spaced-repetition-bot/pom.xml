@@ -15,7 +15,7 @@
     <description>spaced-repetition-bot</description>
 
     <properties>
-        <testcontainers.version>1.18.3</testcontainers.version>
+        <testcontainers.version>1.21.4</testcontainers.version>
         <mockito.version>5.2.0</mockito.version>
     </properties>
 
