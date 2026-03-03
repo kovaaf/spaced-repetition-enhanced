@@ -5,20 +5,25 @@ ARG SKIP_CHECKSTYLE=false
 
 WORKDIR /workspace
 
-# Copy only necessary modules for bot build
+# Copy parent pom and checkstyle
 COPY ./pom.xml .
 COPY ./checkstyle.xml .
+
+# Install parent pom to local repository (fix for missing parent artifact)
+RUN mvn -N install
+
+# Copy modules
 COPY ./spaced-repetition-bot/ ./spaced-repetition-bot/
 COPY ./spaced-repetition-protobuf/ ./spaced-repetition-protobuf/
 
-# First, install protobuf module locally
+# Build protobuf module
 RUN if [ "$SKIP_CHECKSTYLE" = "true" ]; then \
         mvn -B -f ./spaced-repetition-protobuf/pom.xml clean install -Dcheckstyle.skip=true -DskipTests; \
     else \
         mvn -B -f ./spaced-repetition-protobuf/pom.xml clean install -DskipTests; \
     fi
 
-# Then build bot module - skip tests and test dependencies
+# Build bot module
 RUN if [ "$SKIP_CHECKSTYLE" = "true" ]; then \
         mvn -B -f ./spaced-repetition-bot/pom.xml clean package -Dcheckstyle.skip=true -DskipTests; \
     else \
