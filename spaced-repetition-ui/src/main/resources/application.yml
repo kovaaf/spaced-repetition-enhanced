@@ -1,0 +1,3 @@
+data:
+  service:
+    url: localhost:9091
