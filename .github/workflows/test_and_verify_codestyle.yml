@@ -1,6 +1,6 @@
 name: Run tests and verify code style
 on:
-  push:
+  pull_request:
     branches: '*'
 
 jobs:
@@ -13,20 +13,6 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
-
-      - name: Check GIT_TOKEN secret
-        run: |
-          if [ -z "${{ secrets.GIT_TOKEN }}" ]; then
-            echo "❌ GIT_TOKEN is not set or empty"
-            exit 1
-          else
-            echo "✅ GIT_TOKEN is set (value is masked)"
-          fi
-          
-      - name: Show first 4 chars of GIT_TOKEN (for testing only)
-        run: |
-          token="${{ secrets.GIT_TOKEN }}"
-          echo "First 4 chars: ${token:0:4}"
 
       - name: Run tests and verify code style
         run: mvn verify
