@@ -1,13 +1,11 @@
 name: Run tests and verify code style
 on:
-  pull_request:
+  push:
     branches: '*'
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v4
       - name: Set up JDK 17
