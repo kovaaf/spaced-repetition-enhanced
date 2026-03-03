@@ -54,8 +54,9 @@ jobs:
         run: |
           git config --global user.name github-actions
           git config --global user.email github-actions@github.com
+          git remote set-url origin https://x-access-token:${{ secrets.GIT_TOKEN }}@github.com/${{ github.repository }}.git
           git add -A
-          git commit -m "Update coverage badges"
+          git commit -m "Update coverage badges" || exit 0
           git push --force origin HEAD:badges-branch
 
       - name: Upload Spaced Repetition Bot Badge to Gist
