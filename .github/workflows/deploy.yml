@@ -63,6 +63,10 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+      - name: Build Data Module with Gradle
+        working-directory: ./spaced-repetition-data
+        run: ./gradlew clean build
+
       - name: Build and Push Data Image
         if: ${{ needs.detect-changes.outputs.spaced-repetition-data == 'true' }}
         uses: docker/build-push-action@v3
