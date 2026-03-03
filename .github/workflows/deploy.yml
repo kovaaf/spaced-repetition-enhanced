@@ -64,8 +64,11 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: Build Data Module with Gradle
+        if: ${{ needs.detect-changes.outputs.spaced-repetition-data == 'true' }}
         working-directory: ./spaced-repetition-data
-        run: ./gradlew clean build
+        run: |
+          chmod +x gradlew
+          ./gradlew clean build
 
       - name: Build and Push Data Image
         if: ${{ needs.detect-changes.outputs.spaced-repetition-data == 'true' }}
