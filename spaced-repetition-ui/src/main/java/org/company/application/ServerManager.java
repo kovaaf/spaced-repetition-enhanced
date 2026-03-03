@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.company.config.ServerInfo;
 import org.company.domain.GrpcDataService;
 import org.company.domain.TimeFilter;
+import org.company.domain.exception.DataServiceException;
 import org.company.presentation.view.TaskView;
 
 import javax.swing.*;
@@ -54,11 +55,9 @@ public class ServerManager {
                     GrpcDataService newService = null;
                     try {
                         newService = new GrpcDataService(server.url());
-                        // Проверяем соединение лёгким запросом
-                        newService.fetchData(TimeFilter.LAST_DAY); // может бросить исключение
-                    } catch (Exception e) {
-                        log.error("Failed to connect to new server: {}", server.url(), e);
-                        // Закрываем созданный, но неиспользуемый сервис
+                        newService.fetchData(TimeFilter.LAST_DAY); // проверка соединения
+                    } catch (DataServiceException e) {
+                        log.error("Failed to connect to new server {}: {}. Returning to previous server.", server.url(), e.getMessage(), e);
                         if (newService != null) {
                             try {
                                 newService.shutdown();
@@ -66,19 +65,33 @@ public class ServerManager {
                                 Thread.currentThread().interrupt();
                             }
                         }
-                        // Показываем сообщение об ошибке
                         SwingUtilities.invokeLater(() -> {
                             JOptionPane.showMessageDialog(
                                     null,
-                                    "Не удалось подключиться к серверу " + serverName + ".\n" + e.getMessage(),
+                                    "Не удалось подключиться к серверу " + serverName + ".\nПроверьте сетевое соединение и доступность сервера.",
                                     "Ошибка подключения",
                                     JOptionPane.ERROR_MESSAGE
                             );
                         });
-                        // Возвращаем выбор в меню на предыдущий сервер (это должно быть сделано в UI)
-                        // Но так как мы не имеем ссылки на меню, лучше уведомить view о необходимости обновить выделение.
-                        // Можно через callback или событие. Упростим: пусть view сам восстановит выделение.
-                        // Для этого добавим метод notifyServerSwitchFailed(String failedServerName) в TaskView.
+                        view.onServerSwitchFailed(serverName, currentServerName);
+                        return;
+                    } catch (Exception e) {
+                        log.error("Unexpected error connecting to new server {}: {}", server.url(), e.getMessage(), e);
+                        if (newService != null) {
+                            try {
+                                newService.shutdown();
+                            } catch (InterruptedException ex) {
+                                Thread.currentThread().interrupt();
+                            }
+                        }
+                        SwingUtilities.invokeLater(() -> {
+                            JOptionPane.showMessageDialog(
+                                    null,
+                                    "Неизвестная ошибка при подключении к серверу " + serverName + ".\n" + e.getMessage(),
+                                    "Ошибка подключения",
+                                    JOptionPane.ERROR_MESSAGE
+                            );
+                        });
                         view.onServerSwitchFailed(serverName, currentServerName);
                         return;
                     }

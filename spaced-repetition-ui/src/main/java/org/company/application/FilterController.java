@@ -4,10 +4,12 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.company.domain.*;
+import org.company.domain.exception.DataServiceException;
 import org.company.infrastructure.swing.DelegatingSwingWorker;
 import org.company.presentation.view.TaskView;
 
 import javax.swing.*;
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -50,6 +52,7 @@ public class FilterController {
                 try {
                     if (isCancelled()) {
                         view.onTaskCancelled();
+                        log.info("Загрузка отменена пользователем");
                     } else {
                         List<AnswerEvent> result = get();
                         if (result != null) {
@@ -57,15 +60,26 @@ public class FilterController {
                             view.onTaskCompleted("Данные загружены");
                             startStreaming();
                         } else {
-                            view.showError("Не удалось загрузить данные");
+                            view.showError("Не удалось загрузить данные (сервер вернул пустой результат)");
+                            log.warn("Data loading returned null for filter {}", currentFilter);
                         }
                     }
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
-                    view.showError("Прервано");
+                    view.showError("Загрузка прервана");
+                    log.warn("Data loading interrupted", e);
                 } catch (ExecutionException e) {
                     Throwable cause = e.getCause();
-                    view.showError("Ошибка: " + cause.getMessage());
+                    if (cause instanceof DataServiceException) {
+                        view.showError("Ошибка при загрузке данных с сервера. Проверьте соединение.");
+                        log.error("Data service error during filter {}: {}", currentFilter, cause.getMessage(), cause);
+                    } else if (cause instanceof IOException) {
+                        view.showError("Сетевая ошибка. Проверьте соединение с сервером.");
+                        log.error("Network error during filter {}: {}", currentFilter, cause.getMessage(), cause);
+                    } else {
+                        view.showError("Неизвестная ошибка при загрузке данных.");
+                        log.error("Unexpected error during data loading for filter {}", currentFilter, cause);
+                    }
                 } finally {
                     view.setProgressIndeterminate(false);
                     view.setRunningState(false);

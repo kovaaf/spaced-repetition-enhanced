@@ -5,6 +5,7 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.StatusRuntimeException;
 import lombok.extern.slf4j.Slf4j;
+import org.company.domain.exception.DataServiceException;
 import org.company.spacedrepetitiondata.grpc.AnalyticsProto;
 import org.company.spacedrepetitiondata.grpc.AnalyticsServiceGrpc;
 
@@ -34,7 +35,8 @@ public class GrpcDataService implements DataService {
         log.info("gRPC channel created to {}", target);
     }
 
-    public List<AnswerEvent> fetchData(TimeFilter filter) throws Exception {
+    @Override
+    public List<AnswerEvent> fetchData(TimeFilter filter) throws DataServiceException {
         try {
             Instant start = calculateStartTime(filter, Instant.now());
             Instant end = Instant.now();
@@ -44,7 +46,6 @@ public class GrpcDataService implements DataService {
                     .setEndTime(Timestamp.newBuilder().setSeconds(end.getEpochSecond()).setNanos(end.getNano()))
                     .build();
 
-            // Добавляем таймаут
             AnalyticsProto.AnalyticsResponse response = blockingStub.withDeadlineAfter(10, TimeUnit.SECONDS)
                     .getAnalytics(request);
             List<AnswerEvent> events = new ArrayList<>();
@@ -54,8 +55,8 @@ public class GrpcDataService implements DataService {
             log.info("Loaded {} events from gRPC", events.size());
             return events;
         } catch (StatusRuntimeException e) {
-            log.error("gRPC call failed: {}", e.getStatus(), e);
-            throw new Exception("Failed to fetch data from gRPC server", e);
+            log.error("gRPC call failed: {}. Throwing DataServiceException.", e.getStatus(), e);
+            throw new DataServiceException("Failed to fetch data from gRPC server: " + e.getMessage(), e);
         }
     }
 
@@ -63,7 +64,7 @@ public class GrpcDataService implements DataService {
         AnalyticsProto.StreamAnalyticsRequest request = createStreamRequest(filter);
         Iterator<AnalyticsProto.StreamAnalyticsResponse> iterator = blockingStub.streamAnalytics(request);
 
-        log.info("Creating new gRPC stream");
+        log.info("Creating new gRPC stream for filter {}", filter);
 
         Thread streamingThread = new Thread(() -> {
             try {
@@ -132,8 +133,7 @@ public class GrpcDataService implements DataService {
     }
 
     public void shutdown() throws InterruptedException {
-        channel.shutdown(); // инициирует закрытие, но не ждёт
-        // При необходимости можно добавить логирование
-        log.info("gRPC channel shutdown initiated");
+        channel.shutdown();
+        log.info("gRPC channel shutdown initiated for {}", target);
     }
 }
