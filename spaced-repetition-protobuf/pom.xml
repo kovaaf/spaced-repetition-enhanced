@@ -13,12 +13,11 @@
     </parent>
     
     <artifactId>spaced-repetition-protobuf</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
     <name>spaced-repetition-protobuf</name>
     <description>Protocol Buffer definitions for Spaced Repetition system</description>
     
     <packaging>pom</packaging>
-    
+
     <build>
         <plugins>
             <plugin>
