@@ -116,6 +116,7 @@ jobs:
           script: |
             set -e  # Немедленный выход при ошибке
             trap 'rm -f .env' EXIT  # Гарантированное удаление .env при выходе
+            echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
             
             # Обновляем только измененные сервисы
             if [ '${{ needs.detect-changes.outputs.docker-compose }}' = 'true' ]; then
