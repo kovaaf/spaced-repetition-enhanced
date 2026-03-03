@@ -20,9 +20,8 @@
         
         <!-- Update the analytics_outbox table to use the new sequence -->
         <sql>
-            -- Drop the default value from the outbox_id column
-            ALTER TABLE public.analytics_outbox 
-            ALTER COLUMN outbox_id DROP DEFAULT;
+            ALTER TABLE public.analytics_outbox
+                ALTER COLUMN outbox_id DROP IDENTITY;
         </sql>
         
         <sql>
