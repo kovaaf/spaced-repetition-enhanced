@@ -14,6 +14,9 @@ COPY spaced-repetition-data/src ./src
 # Make gradlew executable
 RUN chmod +x gradlew
 
+# Fix proto source path in build.gradle (replace ../spaced-repetition-protobuf with spaced-repetition-protobuf)
+RUN sed -i 's|\.\./spaced-repetition-protobuf|spaced-repetition-protobuf|g' build.gradle
+
 # Diagnostic: list proto files to verify they exist
 RUN echo "Checking proto files:" && find spaced-repetition-protobuf -name "*.proto" || echo "No proto files found"
 
