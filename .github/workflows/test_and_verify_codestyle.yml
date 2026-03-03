@@ -15,4 +15,6 @@ jobs:
           distribution: 'temurin'
 
       - name: Run tests and verify code style
+        env:
+          GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
         run: mvn verify

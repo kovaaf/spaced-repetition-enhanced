@@ -19,6 +19,8 @@ jobs:
           distribution: 'temurin'
 
       - name: Build with Maven
+        env:
+          GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
         run: mvn -B verify
 
       - name: Make gradlew executable in Data module
