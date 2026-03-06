@@ -5,8 +5,8 @@ services:
     image: postgres:17.5-alpine
     ports:
       - '5430:5432'
-    mem_limit: 76m
-    mem_reservation: 48m
+    mem_limit: 64m
+    mem_reservation: 36m
     environment:
       POSTGRES_USER: ${TELEGRAM_BOT_DB_USER:-postgres}
       POSTGRES_PASSWORD: ${TELEGRAM_BOT_DB_PASSWORD:-postgres}
@@ -29,7 +29,7 @@ services:
     image: ouidockeruser/spaced-repetition-bot-enhanced:latest
     container_name: spaced-repetition-bot
     restart: unless-stopped
-    mem_limit: 384m
+    mem_limit: 408m
     mem_reservation: 256m
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]

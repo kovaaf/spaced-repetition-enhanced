@@ -5,8 +5,8 @@ services:
     image: postgres:17.5-alpine
     ports:
       - '5430:5432'
-    mem_limit: 128m
-    mem_reservation: 64m
+    mem_limit: 64m
+    mem_reservation: 32m
     environment:
       POSTGRES_DB: spaced-repetition-bot-db
       POSTGRES_USER: ${TELEGRAM_BOT_DB_USER:-postgres}
@@ -31,8 +31,8 @@ services:
       dockerfile: spaced-repetition-bot/Dockerfile
     container_name: spaced-repetition-bot
     restart: unless-stopped
-    mem_limit: 640m
-    mem_reservation: 384m
+    mem_limit: 384m
+    mem_reservation: 256m
     environment:
       _JAVA_OPTIONS: >-
         -Xmx384m
@@ -89,7 +89,7 @@ services:
     mem_reservation: 64m
     environment:
       _JAVA_OPTIONS: >-
-        -Xmx128m
+        -Xmx96m
         -Xms64m
         -XX:+UseContainerSupport
         -XX:MaxRAMPercentage=50.0
