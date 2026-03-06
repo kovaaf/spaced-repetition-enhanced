@@ -43,7 +43,7 @@ app:
   analytics:
     outbox:
       processor:
-        cron: ${ANALYTICS_OUTBOX_PROCESSOR_CRON:'* * * * * *'}
+        cron: "${ANALYTICS_OUTBOX_PROCESSOR_CRON:* * * * * *}"
         batch-size: ${ANALYTICS_OUTBOX_PROCESSOR_BATCH_SIZE:200}
         max-retries: ${ANALYTICS_OUTBOX_PROCESSOR_MAX_RETRIES:5}
         initial-delay: ${ANALYTICS_OUTBOX_PROCESSOR_INITIAL_DELAY:1000}
