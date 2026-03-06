@@ -132,6 +132,9 @@ encryption:
 git:
   sync:
     enabled: true
+    retry:
+      max-attempts: 5
+      initial-delay-ms: 2000
 
 grpc:
   client:
