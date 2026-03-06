@@ -43,7 +43,6 @@ services:
         -Xms128m
         -XX:+UseContainerSupport
         -XX:MaxRAMPercentage=75.0
-        -XX:MaxMetaspaceSize=64m
         -XX:MaxDirectMemorySize=64m
         -XX:+HeapDumpOnOutOfMemoryError
         -XX:HeapDumpPath=/tmp/heapdump.hprof
