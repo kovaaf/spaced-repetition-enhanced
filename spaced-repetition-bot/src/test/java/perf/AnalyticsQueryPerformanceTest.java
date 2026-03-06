@@ -1,10 +1,11 @@
 package perf;
 
+import com.google.protobuf.Timestamp;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import org.company.spacedrepetitiondata.grpc.AnalyticsProto;
 import org.company.spacedrepetitiondata.grpc.AnalyticsServiceGrpc;
-import com.google.protobuf.Timestamp;
+
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
 

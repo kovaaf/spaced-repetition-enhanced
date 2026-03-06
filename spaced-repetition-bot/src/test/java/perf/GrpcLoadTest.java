@@ -1,16 +1,17 @@
 package perf;
 
+import com.google.protobuf.Empty;
+import com.google.protobuf.Timestamp;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import org.company.spacedrepetitiondata.grpc.AnalyticsProto;
 import org.company.spacedrepetitiondata.grpc.AnalyticsServiceGrpc;
-import com.google.protobuf.Empty;
-import com.google.protobuf.Timestamp;
+
 import java.time.Instant;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class GrpcLoadTest {

@@ -4,7 +4,6 @@ import org.company.spacedrepetitionbot.config.AppProperties;
 import org.company.spacedrepetitionbot.config.GitSyncProperties;
 import org.company.spacedrepetitionbot.model.Deck;
 import org.company.spacedrepetitionbot.service.DeckService;
-import org.company.spacedrepetitionbot.service.default_deck.event.SyncEventDTO;
 import org.company.spacedrepetitionbot.service.default_deck.processors.SyncEventProcessor;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -12,11 +11,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Collections;
 import java.util.Optional;
 
 import static org.mockito.Mockito.*;
-import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
 class SyncSchedulerTest {

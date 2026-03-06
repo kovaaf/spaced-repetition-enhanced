@@ -9,7 +9,7 @@ jobs:
   code-coverage-badges:
     runs-on: ubuntu-latest
     permissions:
-      contents: write          # разрешаем GITHUB_TOKEN писать в репозиторий
+      contents: write
 
     steps:
       - uses: actions/checkout@v4

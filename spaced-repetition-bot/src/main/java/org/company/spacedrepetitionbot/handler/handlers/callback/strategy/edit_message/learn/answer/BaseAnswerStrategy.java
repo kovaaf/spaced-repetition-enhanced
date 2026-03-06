@@ -1,6 +1,7 @@
 package org.company.spacedrepetitionbot.handler.handlers.callback.strategy.edit_message.learn.answer;
 
 import lombok.extern.slf4j.Slf4j;
+import org.company.spacedrepetitionbot.constants.OutboxStatus;
 import org.company.spacedrepetitionbot.constants.Quality;
 import org.company.spacedrepetitionbot.constants.Status;
 import org.company.spacedrepetitionbot.exception.SessionCompletedException;
@@ -8,11 +9,10 @@ import org.company.spacedrepetitionbot.handler.handlers.callback.Callback;
 import org.company.spacedrepetitionbot.handler.handlers.callback.strategy.edit_message.BaseEditCallbackStrategy;
 import org.company.spacedrepetitionbot.model.Card;
 import org.company.spacedrepetitionbot.model.LearningSession;
+import org.company.spacedrepetitionbot.model.analytics.AnalyticsOutbox;
+import org.company.spacedrepetitionbot.repository.analytics.AnalyticsOutboxRepository;
 import org.company.spacedrepetitionbot.service.MessageStateService;
 import org.company.spacedrepetitionbot.service.learning.LearningSessionService;
-import org.company.spacedrepetitionbot.repository.analytics.AnalyticsOutboxRepository;
-import org.company.spacedrepetitionbot.model.analytics.AnalyticsOutbox;
-import org.company.spacedrepetitionbot.constants.OutboxStatus;
 import org.company.spacedrepetitionbot.utils.KeyboardManager;
 import org.company.spacedrepetitionbot.utils.MarkdownEscaper;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;

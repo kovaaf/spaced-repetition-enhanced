@@ -4,20 +4,17 @@ import org.company.spacedrepetitionbot.client.analytics.AnalyticsServiceClient;
 import org.company.spacedrepetitionbot.config.AppProperties;
 import org.company.spacedrepetitionbot.constants.OutboxStatus;
 import org.company.spacedrepetitionbot.constants.Quality;
-import org.company.spacedrepetitionbot.model.analytics.AnalyticsOutbox;
 import org.company.spacedrepetitionbot.model.analytics.AnalyticsDLQ;
-import org.company.spacedrepetitionbot.repository.analytics.AnalyticsOutboxRepository;
+import org.company.spacedrepetitionbot.model.analytics.AnalyticsOutbox;
 import org.company.spacedrepetitionbot.repository.analytics.AnalyticsDLQRepository;
-import org.company.spacedrepetitionbot.service.analytics.OutboxMetrics;
+import org.company.spacedrepetitionbot.repository.analytics.AnalyticsOutboxRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.InOrder;
+import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.ArgumentMatchers;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDateTime;
@@ -25,9 +22,6 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.ArgumentMatchers.argThat;
-import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.*;
 
 /**

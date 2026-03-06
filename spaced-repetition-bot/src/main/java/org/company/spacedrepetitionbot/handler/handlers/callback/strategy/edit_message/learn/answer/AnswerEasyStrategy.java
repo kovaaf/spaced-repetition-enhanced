@@ -2,9 +2,9 @@ package org.company.spacedrepetitionbot.handler.handlers.callback.strategy.edit_
 
 import org.company.spacedrepetitionbot.constants.Quality;
 import org.company.spacedrepetitionbot.handler.handlers.callback.Callback;
+import org.company.spacedrepetitionbot.repository.analytics.AnalyticsOutboxRepository;
 import org.company.spacedrepetitionbot.service.MessageStateService;
 import org.company.spacedrepetitionbot.service.learning.LearningSessionService;
-import org.company.spacedrepetitionbot.repository.analytics.AnalyticsOutboxRepository;
 import org.company.spacedrepetitionbot.utils.KeyboardManager;
 import org.company.spacedrepetitionbot.utils.MarkdownEscaper;
 import org.springframework.stereotype.Component;

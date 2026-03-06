@@ -1,8 +1,8 @@
 package org.company.spacedrepetitionbot.handler.handlers.callback.strategy.edit_message.learn.answer;
 
+import org.company.spacedrepetitionbot.constants.OutboxStatus;
 import org.company.spacedrepetitionbot.constants.Quality;
 import org.company.spacedrepetitionbot.constants.Status;
-import org.company.spacedrepetitionbot.constants.OutboxStatus;
 import org.company.spacedrepetitionbot.model.Card;
 import org.company.spacedrepetitionbot.model.Deck;
 import org.company.spacedrepetitionbot.model.UserInfo;
@@ -26,12 +26,8 @@ import org.telegram.telegrambots.meta.generics.TelegramClient;
 import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
-import static org.mockito.Mockito.never;
 
 /**
  * Unit tests for {@link AnswerAgainStrategy}.

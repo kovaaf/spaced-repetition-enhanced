@@ -1,8 +1,5 @@
 package org.company.spacedrepetitionbot.service;
 
-import org.company.spacedrepetitionbot.model.Card;
-import org.company.spacedrepetitionbot.model.Deck;
-import org.company.spacedrepetitionbot.model.UserInfo;
 import org.company.spacedrepetitionbot.repository.CardRepository;
 import org.company.spacedrepetitionbot.repository.DeckRepository;
 import org.company.spacedrepetitionbot.repository.UserInfoRepository;
@@ -12,11 +9,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @ExtendWith(MockitoExtension.class)
 class CardServiceTest {

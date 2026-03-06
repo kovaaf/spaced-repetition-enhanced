@@ -1,24 +1,25 @@
 package org.company.spacedrepetitiondata.service;
 
+import com.google.protobuf.Empty;
+import io.grpc.Context;
+import io.grpc.Status;
+import io.grpc.StatusRuntimeException;
+import io.grpc.stub.StreamObserver;
 import org.company.spacedrepetitiondata.grpc.AnalyticsProto;
 import org.company.spacedrepetitiondata.grpc.AnalyticsServiceGrpc;
 import org.company.spacedrepetitiondata.health.MetricsEndpoint;
 import org.company.spacedrepetitiondata.repository.AnswerEventRecord;
 import org.company.spacedrepetitiondata.repository.AnswerEventRepository;
 import org.company.spacedrepetitiondata.repository.UserRecord;
-import java.time.Instant;
-import java.util.List;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
-import com.google.protobuf.Empty;
-import io.grpc.Status;
-import io.grpc.StatusRuntimeException;
-import io.grpc.Context;
-import io.grpc.stub.StreamObserver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.time.Instant;
+import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Implementation of AnalyticsService with metrics tracking.

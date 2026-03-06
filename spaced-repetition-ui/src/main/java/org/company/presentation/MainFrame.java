@@ -6,7 +6,6 @@ import org.company.application.FilterController;
 import org.company.application.ServerManager;
 import org.company.config.ServerInfo;
 import org.company.domain.AnswerEvent;
-import org.company.domain.GrpcDataService;
 import org.company.presentation.components.DataTable;
 import org.company.presentation.components.FilterPanel;
 import org.company.presentation.components.LogPanel;
@@ -16,8 +15,8 @@ import org.company.presentation.view.TaskView;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 
 @Slf4j
 public class MainFrame extends JFrame implements TaskView {
