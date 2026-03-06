@@ -8,6 +8,8 @@ on:
 jobs:
   code-coverage-badges:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write          # разрешаем GITHUB_TOKEN писать в репозиторий
 
     steps:
       - uses: actions/checkout@v4
@@ -57,7 +59,7 @@ jobs:
           git add -A
           if ! git diff --cached --quiet; then
             git commit -m "Update coverage badges"
-            git push --force "https://${{ secrets.GIT_TOKEN }}@github.com/${{ github.repository }}.git" HEAD:badges-branch
+            git push origin HEAD:badges-branch
           else
             echo "No changes to commit"
           fi
