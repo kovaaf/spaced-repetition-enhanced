@@ -28,9 +28,7 @@ public class GrpcDataService implements DataService {
     }
 
     private void initChannel() {
-        channel = ManagedChannelBuilder.forTarget(target)
-                .usePlaintext()
-                .build();
+        channel = ManagedChannelBuilder.forTarget(target).usePlaintext().build();
         blockingStub = AnalyticsServiceGrpc.newBlockingStub(channel);
         log.info("gRPC channel created to {}", target);
     }
@@ -60,54 +58,6 @@ public class GrpcDataService implements DataService {
         }
     }
 
-    public Runnable startStreaming(TimeFilter filter, Consumer<AnswerEvent> onEvent, Runnable onError, Runnable onCompleted) {
-        AnalyticsProto.StreamAnalyticsRequest request = createStreamRequest(filter);
-        Iterator<AnalyticsProto.StreamAnalyticsResponse> iterator = blockingStub.streamAnalytics(request);
-
-        log.info("Creating new gRPC stream for filter {}", filter);
-
-        Thread streamingThread = new Thread(() -> {
-            try {
-                while (iterator.hasNext()) {
-                    AnalyticsProto.StreamAnalyticsResponse response = iterator.next();
-                    AnswerEvent event = toAnswerEvent(response.getEvent());
-                    log.debug("gRPC stream received event: user={}, deck={}, card={}, time={}",
-                            event.userId(), event.deckId(), event.cardId(), event.timestamp());
-                    onEvent.accept(event);
-                }
-                log.info("gRPC stream completed normally");
-                onCompleted.run();
-            } catch (StatusRuntimeException e) {
-                if (e.getStatus().getCode() == io.grpc.Status.Code.CANCELLED && Thread.currentThread().isInterrupted()) {
-                    log.info("gRPC stream cancelled by user (filter switch)");
-                    onCompleted.run();
-                } else {
-                    log.error("gRPC streaming error", e);
-                    onError.run();
-                }
-            } catch (Exception e) {
-                log.error("gRPC streaming error", e);
-                onError.run();
-            }
-        }, "gRPC-streaming-thread");
-
-        streamingThread.setDaemon(true);
-        streamingThread.start();
-
-        return streamingThread::interrupt;
-    }
-
-    private AnalyticsProto.StreamAnalyticsRequest createStreamRequest(TimeFilter filter) {
-        AnalyticsProto.StreamAnalyticsRequest.Builder builder = AnalyticsProto.StreamAnalyticsRequest.newBuilder();
-        if (filter != TimeFilter.ALL_TIME) {
-            Instant start = calculateStartTime(filter, Instant.now());
-            builder.setStartTime(Timestamp.newBuilder()
-                    .setSeconds(start.getEpochSecond())
-                    .setNanos(start.getNano()));
-        }
-        return builder.build();
-    }
-
     private Instant calculateStartTime(TimeFilter filter, Instant now) {
         return switch (filter) {
             case LAST_DAY -> now.minusSeconds(24 * 60 * 60);
@@ -128,12 +78,53 @@ public class GrpcDataService implements DataService {
                 proto.getCardId(),
                 proto.hasCardTitle() ? proto.getCardTitle() : null,
                 proto.getQualityValue(),
-                timestamp
-        );
+                timestamp);
     }
 
     public void shutdown() throws InterruptedException {
         channel.shutdown();
         log.info("gRPC channel shutdown initiated for {}", target);
+    }
+
+    // In GrpcDataService.java
+    public Runnable startStreamingFrom(
+            Instant startTime,
+            Consumer<AnswerEvent> onEvent,
+            Runnable onError,
+            Runnable onCompleted) {
+        AnalyticsProto.StreamAnalyticsRequest.Builder builder = AnalyticsProto.StreamAnalyticsRequest.newBuilder();
+        if (startTime != null) {
+            builder.setStartTime(com.google.protobuf.Timestamp.newBuilder()
+                    .setSeconds(startTime.getEpochSecond())
+                    .setNanos(startTime.getNano()));
+        }
+        AnalyticsProto.StreamAnalyticsRequest request = builder.build();
+
+        Iterator<AnalyticsProto.StreamAnalyticsResponse> iterator = blockingStub.streamAnalytics(request);
+
+        Thread streamingThread = new Thread(
+                () -> {
+                    try {
+                        while (iterator.hasNext()) {
+                            AnalyticsProto.StreamAnalyticsResponse response = iterator.next();
+                            AnswerEvent event = toAnswerEvent(response.getEvent());
+                            onEvent.accept(event);
+                        }
+                        onCompleted.run();
+                    } catch (StatusRuntimeException e) {
+                        if (e.getStatus().getCode() == io.grpc.Status.Code.CANCELLED &&
+                                Thread.currentThread().isInterrupted()) {
+                            onCompleted.run();
+                        } else {
+                            onError.run();
+                        }
+                    } catch (Exception e) {
+                        onError.run();
+                    }
+                }, "gRPC-streaming-thread");
+
+        streamingThread.setDaemon(true);
+        streamingThread.start();
+        return streamingThread::interrupt;
     }
 }
