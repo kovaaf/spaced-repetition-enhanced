@@ -29,8 +29,8 @@ services:
     image: ouidockeruser/spaced-repetition-bot-enhanced:latest
     container_name: spaced-repetition-bot
     restart: unless-stopped
-    mem_limit: 768m
-    mem_reservation: 512m
+    mem_limit: 512m
+    mem_reservation: 384m
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
       interval: 30s
