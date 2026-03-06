@@ -5,11 +5,13 @@ import org.company.spacedrepetitionbot.config.GitSyncProperties;
 import org.company.spacedrepetitionbot.model.Deck;
 import org.company.spacedrepetitionbot.service.DeckService;
 import org.company.spacedrepetitionbot.service.default_deck.processors.SyncEventProcessor;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import static org.mockito.Mockito.*;
 
@@ -30,6 +32,13 @@ class ApplicationInitializerTest {
 
     @InjectMocks
     private ApplicationInitializer applicationInitializer;
+
+    @BeforeEach
+    void setUp() {
+        // Инициализация полей с @Value
+        ReflectionTestUtils.setField(applicationInitializer, "maxAttempts", 3);
+        ReflectionTestUtils.setField(applicationInitializer, "initialDelayMs", 2000);
+    }
 
     @Test
     void initialize_WhenGitSyncEnabled_ShouldInitializeDeckAndProcessSyncEvent() {

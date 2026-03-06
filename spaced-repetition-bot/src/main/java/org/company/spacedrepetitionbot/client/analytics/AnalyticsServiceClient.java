@@ -64,7 +64,11 @@ public class AnalyticsServiceClient {
     }
 
     private AnalyticsProto.Quality mapQuality(Quality quality) {
-        // The numeric values match between the constants and protobuf enum
-        return AnalyticsProto.Quality.forNumber(quality.getQuality());
+        return switch (quality) {
+            case AGAIN -> AnalyticsProto.Quality.AGAIN;
+            case HARD -> AnalyticsProto.Quality.HARD;
+            case GOOD -> AnalyticsProto.Quality.GOOD;
+            case EASY -> AnalyticsProto.Quality.EASY;
+        };
     }
 }
