@@ -33,11 +33,11 @@ jobs:
         uses: appleboy/scp-action@master
         with:
           host: ${{ secrets.SSH_HOST }}
-          username: "github-spaced-repetition"
+          username: "sre-gh-actions"
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
           source: "docker-compose.yml"
-          target: "/home/github-spaced-repetition"
+          target: "/home/sre-gh-actions"
 
   build-and-push-images-to-dockerhub:
     name: Build and Push Images to DockerHub
