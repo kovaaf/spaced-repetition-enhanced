@@ -5,8 +5,8 @@ services:
     image: postgres:17.5-alpine
     ports:
       - '5430:5432'
-    mem_limit: 64m
-    mem_reservation: 36m
+    mem_limit: 48m
+    mem_reservation: 24m
     environment:
       POSTGRES_USER: ${TELEGRAM_BOT_DB_USER:-postgres}
       POSTGRES_PASSWORD: ${TELEGRAM_BOT_DB_PASSWORD:-postgres}
@@ -39,14 +39,14 @@ services:
       start_period: 120s
     environment:
       _JAVA_OPTIONS: >-
-        -Xmx384m
+        -Xmx192m
         -Xms128m
         -XX:+UseContainerSupport
         -XX:MaxRAMPercentage=75.0
-        -XX:MaxDirectMemorySize=64m
         -XX:+HeapDumpOnOutOfMemoryError
         -XX:HeapDumpPath=/tmp/heapdump.hprof
         -XX:+ExitOnOutOfMemoryError
+        -XX:+UseG1GC
         -Xlog:gc*,heap*:file=/tmp/gc.log:time,level:filecount=3,filesize=10m
       TELEGRAM_BOT_DB_HOST: spaced-repetition-bot-db
       TELEGRAM_BOT_DB_PORT: 5432
