@@ -126,7 +126,7 @@ encryption:
 
 git:
   sync:
-    enabled: false
+    enabled: true
     retry:
       max-attempts: 5
       initial-delay-ms: 2000
