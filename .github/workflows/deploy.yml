@@ -1,0 +1,150 @@
+name: Build & Deploy
+
+on:
+  push:
+    branches:
+      - dev
+
+jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      spaced-repetition-bot: ${{ steps.filter.outputs.spaced-repetition-bot }}
+      spaced-repetition-data: ${{ steps.filter.outputs.spaced-repetition-data }}
+      docker-compose: ${{ steps.filter.outputs.docker-compose }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          base: ${{ github.ref }}
+          filters: |
+            spaced-repetition-bot: ['spaced-repetition-bot/**']
+            spaced-repetition-data: ['spaced-repetition-data/**']
+            docker-compose: ['docker-compose.yml']
+
+  push-docker-compose-to-remote-server:
+    name: Push docker-compose.yaml to remote server
+    runs-on: ubuntu-latest
+    needs: [detect-changes]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Copy docker-compose.yml to server
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: "sre-gh-actions"
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          source: "docker-compose.yml"
+          target: "/home/sre-gh-actions"
+
+  build-and-push-images-to-dockerhub:
+    name: Build and Push Images to DockerHub
+    runs-on: ubuntu-latest
+    needs: [detect-changes]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Login to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Build and Push Bot Image
+        uses: docker/build-push-action@v3
+        with:
+          file: spaced-repetition-bot/Dockerfile
+          push: true
+          tags: ouidockeruser/spaced-repetition-bot-enhanced:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build and Push Data Image
+        uses: docker/build-push-action@v3
+        with:
+          file: spaced-repetition-data/Dockerfile
+          push: true
+          tags: ouidockeruser/spaced-repetition-data-enhanced:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            BUILD_TIME=${{ github.run_id }}
+
+  deploy:
+    name: Deploy to remote server
+    runs-on: ubuntu-latest
+    needs: [ detect-changes, push-docker-compose-to-remote-server, build-and-push-images-to-dockerhub ]
+    steps:
+      - name: Create .env file
+        run: |
+          cat << EOF > .env
+          TELEGRAM_BOT_DB_USER=${{ secrets.TELEGRAM_BOT_DB_USER }}
+          TELEGRAM_BOT_DB_PASSWORD=${{ secrets.TELEGRAM_BOT_DB_PASSWORD }}
+          TELEGRAM_BOT_PORT=${{ secrets.TELEGRAM_BOT_PORT }}
+          TELEGRAM_BOT_NAME=SpacedRepetitionBot
+          TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}
+          GIT_SSH_PASSPHRASE=${{ secrets.GIT_SSH_PASSPHRASE }}
+          GIT_WEBHOOK_SECRET=${{ secrets.GIT_WEBHOOK_SECRET }}
+          GIT_TOKEN=${{ secrets.GIT_TOKEN }}
+          ENCRYPTION_PASSWORD=${{ secrets.ENCRYPTION_PASSWORD }}
+          ENCRYPTION_SALT=${{ secrets.ENCRYPTION_SALT }}
+          DEFAULT_DECK_REPO_URL=${{ secrets.DEFAULT_DECK_REPO_URL }}
+          EOF
+
+          # Защищаем файл перед отправкой
+          chmod 600 .env
+
+      - name: Copy .env to server
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: "sre-gh-actions"
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          source: ".env"
+          target: "/home/sre-gh-actions"
+
+      - name: Deploy Application
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: "sre-gh-actions"
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            set -e
+            trap 'rm -f .env' EXIT
+            echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+
+            # Проверяем, существуют ли уже контейнеры (по имени)
+            if docker ps -a --format '{{.Names}}' | grep -q "spaced-repetition-bot-db"; then
+              # Сервисы уже есть - обновляем только изменённые
+              if [ '${{ needs.detect-changes.outputs.docker-compose }}' = 'true' ]; then
+                docker compose down
+                docker compose pull --quiet
+                docker compose up -d --force-recreate --remove-orphans
+              else
+                services_to_update=()
+                [ '${{ needs.detect-changes.outputs.spaced-repetition-bot }}' = 'true' ] && services_to_update+=("spaced-repetition-bot")
+                [ '${{ needs.detect-changes.outputs.spaced-repetition-data }}' = 'true' ] && services_to_update+=("spaced-repetition-data")
+                for service in "${services_to_update[@]}"; do
+                  docker compose pull --quiet $service
+                  docker compose up -d --no-deps --force-recreate --remove-orphans $service
+                done
+              fi
+            else
+              # Контейнеров нет - запускаем весь стек
+              docker compose pull --quiet
+              docker compose up -d --force-recreate --remove-orphans
+            fi
+
+            echo "Current containers:"
+            docker ps -a
+
+            echo "Cleaning project images..."
+            docker image prune -a -f
+
+      - name: Clean local .env
+        run: rm -f .env

@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.32.xsd">
+
+    <changeSet id="kovaaf--2025.05.25--initialTables" author="kovaaf">
+        <createTable tableName="user_info">
+            <column name="user_chat_id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" unique="true"/>
+            </column>
+            <column name="user_name" type="VARCHAR(255)"/>
+            <column name="has_copied_default_deck" type="BOOLEAN" defaultValue="false">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <sql>
+            INSERT INTO user_info (user_chat_id, user_name)
+            SELECT 0,
+                   'system' WHERE NOT EXISTS (
+                SELECT 1 FROM user_info WHERE user_name = 'system'
+            );
+        </sql>
+
+
+        <createSequence
+                sequenceName="deck_seq"
+                startValue="1"
+                incrementBy="1"/>
+        <createTable tableName="deck">
+            <column name="deck_id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="user_chat_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="is_default" type="BOOLEAN" defaultValue="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_sync_commit" type="VARCHAR(255)"/>
+            <column name="last_updated" type="TIMESTAMP"/>
+        </createTable>
+        <createIndex tableName="deck" indexName="idx_deck_user_chat_id">
+            <column name="user_chat_id"/>
+        </createIndex>
+        <createIndex tableName="deck" indexName="idx_deck_is_default">
+            <column name="is_default"/>
+        </createIndex>
+        <addForeignKeyConstraint constraintName="fk_deck_user_chat_id"
+                                 baseColumnNames="user_chat_id"
+                                 baseTableName="deck"
+                                 referencedColumnNames="user_chat_id"
+                                 referencedTableName="user_info"/>
+
+        <createTable tableName="deck_source_folders">
+            <column name="deck_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="folder" type="VARCHAR(512)"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="deck_source_folders"
+                                 baseColumnNames="deck_id"
+                                 constraintName="fk_deck_source_folders_deck"
+                                 referencedTableName="deck"
+                                 referencedColumnNames="deck_id"/>
+        <createIndex tableName="deck_source_folders" indexName="idx_deck_source_folders_deck_id">
+            <column name="deck_id"/>
+        </createIndex>
+
+
+        <createSequence
+                sequenceName="card_seq"
+                startValue="1"
+                incrementBy="1"
+                cacheSize="10"/>
+        <createTable tableName="card">
+            <column name="card_id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="front" type="VARCHAR(512)"/>
+            <column name="back" type="VARCHAR(50000)"/>
+            <column name="repeat_count" type="INT" defaultValue="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="easiness_factor" type="DOUBLE PRECISION" defaultValue="2.5">
+                <constraints nullable="false"/>
+            </column>
+            <column name="next_review_time" type="timestamp"/>
+            <column name="status" type="VARCHAR(512)" defaultValue="NEW">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deck_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="source_file_path" type="VARCHAR(512)"/>
+            <column name="source_heading" type="VARCHAR(512)"/>
+            <column name="original_card_id" type="bigint"/>
+        </createTable>
+        <createIndex tableName="card" indexName="idx_card_deck_id">
+            <column name="deck_id"/>
+        </createIndex>
+        <createIndex tableName="card" indexName="idx_card_source_file_path">
+            <column name="source_file_path"/>
+        </createIndex>
+        <createIndex tableName="card" indexName="idx_card_source_heading">
+            <column name="source_heading"/>
+        </createIndex>
+        <createIndex tableName="card" indexName="idx_card_original_card_id">
+            <column name="original_card_id"/>
+        </createIndex>
+        <addForeignKeyConstraint constraintName="fk_card_deck_id"
+                                 baseColumnNames="deck_id"
+                                 baseTableName="card"
+                                 referencedColumnNames="deck_id"
+                                 referencedTableName="deck"/>
+        <addForeignKeyConstraint baseTableName="card"
+                                 baseColumnNames="original_card_id"
+                                 constraintName="fk_card_original_card_id"
+                                 referencedTableName="card"
+                                 referencedColumnNames="card_id"
+                                 onDelete="SET NULL"/>
+
+        <createSequence
+                sequenceName="command_seq"
+                startValue="1"
+                incrementBy="1"/>
+        <createTable tableName="executed_command">
+            <column name="id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="user_chat_id" type="BIGINT"/>
+            <column name="command_identifier" type="VARCHAR(255)"/>
+            <column name="arguments" type="TEXT"/>
+            <column name="executed_at" type="timestamp"/>
+        </createTable>
+        <addForeignKeyConstraint
+                baseTableName="executed_command"
+                baseColumnNames="user_chat_id"
+                constraintName="fk_executed_command_user_info"
+                referencedTableName="user_info"
+                referencedColumnNames="user_chat_id"/>
+
+
+        <createSequence
+                sequenceName="menu_message_seq"
+                startValue="1"
+                incrementBy="1"/>
+        <createTable tableName="menu_message_state">
+            <column name="id" type="bigint">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="chat_id" type="bigint">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="message_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="timestamp">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="timestamp">
+                <constraints nullable="false"/>
+            </column>
+            <column name="user_state" type="VARCHAR(255)">
+            </column>
+        </createTable>
+        <createIndex tableName="menu_message_state" indexName="idx_menu_state_chat_id">
+            <column name="chat_id"/>
+        </createIndex>
+
+        <createSequence
+                sequenceName="card_draft_seq"
+                startValue="1"
+                incrementBy="1"/>
+        <createTable tableName="card_draft">
+            <column name="id" type="bigint">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="chat_id" type="bigint">
+                <constraints nullable="false" unique="true" uniqueConstraintName="uk_card_draft_chat_id"/>
+            </column>
+            <column name="deck_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="front" type="varchar(1000)"/>
+            <column name="back" type="varchar(1000)"/>
+            <column name="created_at" type="timestamp"/>
+            <column name="updated_at" type="timestamp"/>
+        </createTable>
+        <createIndex tableName="card_draft" indexName="idx_card_draft_chat_id">
+            <column name="chat_id"/>
+        </createIndex>
+        <createIndex tableName="card_draft" indexName="idx_card_draft_deck_id">
+            <column name="deck_id"/>
+        </createIndex>
+
+
+    </changeSet>
+</databaseChangeLog>

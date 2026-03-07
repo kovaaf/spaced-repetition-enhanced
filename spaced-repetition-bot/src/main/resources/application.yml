@@ -1,0 +1,142 @@
+telegram:
+  bot:
+    name: ${TELEGRAM_BOT_NAME}
+    token: ${TELEGRAM_BOT_TOKEN}
+    api:
+      url: https://api.telegram.org
+
+app:
+  session:
+    max-new-cards: 5
+    max-review-cards: 15
+    reset-cron: "0 0 3 * * ?" # ежедневно в 3:00
+  sync:
+    mode: direct # kafka или direct
+  deck:
+    max-cards-display: 10
+  default-deck:
+    name: "Default Shared Deck"
+    repo:
+      url: ${DEFAULT_DECK_REPO_URL}
+      branch: main
+      path: ./local-repo
+      # Пути должны быть полными относительно корня репозитория
+      source-folders:
+        - Interview/Java Core
+        - Interview/JVM
+        - Interview/ООП
+        - Interview/Многопоточка
+        - Interview/Коллекции и структуры данных
+        - Interview/Stream API
+        - Interview/БД
+#        - Interview/Hibernate & JPA
+#        - Interview/Spring/Модули Spring
+        - Interview/Design Patterns
+        - Interview/Микросервисы
+        - Interview/Прочие вопросы
+      exclude-folders:
+#        - Прочие шаблоны
+      webhook-secret: ${GIT_WEBHOOK_SECRET}
+      token: ${GIT_TOKEN}
+    sync:
+      cron: "0 0 * * * *"
+  analytics:
+    outbox:
+      processor:
+        cron: "${ANALYTICS_OUTBOX_PROCESSOR_CRON:* * * * * *}"
+        batch-size: ${ANALYTICS_OUTBOX_PROCESSOR_BATCH_SIZE:200}
+        max-retries: ${ANALYTICS_OUTBOX_PROCESSOR_MAX_RETRIES:5}
+        initial-delay: ${ANALYTICS_OUTBOX_PROCESSOR_INITIAL_DELAY:1000}
+
+logging:
+  level:
+    root: info
+
+spring:
+  application:
+    name: spaced-repetition-bot
+
+  datasource:
+    url: jdbc:postgresql://${TELEGRAM_BOT_DB_HOST:localhost}:${TELEGRAM_BOT_DB_PORT:5430}/spaced-repetition-bot-db
+    username: ${TELEGRAM_BOT_DB_USER:postgres}
+    password: ${TELEGRAM_BOT_DB_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 3
+      minimum-idle: 1
+      max-lifetime: 900000
+      idle-timeout: 300000
+
+  jpa:
+    generate-ddl: false
+    hibernate.ddl-auto: none
+    show-sql: false
+    properties:
+      hibernate.jdbc.lob.non_contextual_creation: true
+
+  liquibase:
+    enabled: true
+    change-log: /changelog/master.xml
+
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:kafka}:9092
+    consumer:
+      group-id: sync-group
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "*" # TODO вынести все дто в отдельный модуль и указать его здесь
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    topic:
+      sync:
+        events: sync-events
+        max-attempts: 3
+        initial-delay: 1000
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics  # Доступные endpoints
+      base-path: /actuator            # Базовый путь (по умолчанию)
+    health:
+      probes:
+        enabled: true                  # Включить health probes для k8s/containers
+      show-details: when_authorized   # Детали только для авторизованных
+  endpoint:
+    health:
+      show-components: when_authorized # Показывать компоненты только для авторизованных
+      enabled: true
+    metrics:
+      enabled: true
+    info:
+      enabled: true
+  info:
+    env:
+      enabled: true                   # Показывать env info
+
+server:
+  port: ${TELEGRAM_BOT_PORT:8080}
+
+encryption:
+  password: ${ENCRYPTION_PASSWORD}
+  salt: ${ENCRYPTION_SALT}
+
+git:
+  sync:
+    enabled: true
+    retry:
+      max-attempts: 5
+      initial-delay-ms: 2000
+
+grpc:
+  client:
+    myGrpcService:
+      address: 'static://localhost:9091'
+      negotiation-type: plaintext
+    analytics-service:
+      address: ${DATA_SERVICE_URL:static://localhost:9091}
+      negotiation-type: plaintext
+

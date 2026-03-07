@@ -1,0 +1,79 @@
+name: Generate and commit badges
+
+on:
+  push:
+    branches:
+      - dev
+
+jobs:
+  code-coverage-badges:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v2
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Install protobuf module
+        run: mvn -B install -pl spaced-repetition-protobuf -am
+
+      - name: Build with Maven
+        env:
+          GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
+        run: mvn -B verify
+
+      - name: Make gradlew executable in Data module
+        working-directory: ./spaced-repetition-data
+        run: chmod +x ./gradlew
+
+      - name: Build Spaced Repetition Data with Gradle
+        working-directory: ./spaced-repetition-data
+        run: ./gradlew test jacocoTestReport
+
+      - name: Generate Coverage Badges for Spaced Repetition Bot
+        id: jacocoSpacedRepetitionBot
+        uses: cicirello/jacoco-badge-generator@v2
+        with:
+          jacoco-csv-file: spaced-repetition-bot/target/jacoco-report/jacoco.csv
+          coverage-badge-filename: jacoco_spaced_repetition_bot.svg
+          coverage-label: coverage (Spaced Repetition Bot)
+
+      - name: Generate Coverage Badges for Spaced Repetition Data
+        id: jacocoSpacedRepetitionData
+        uses: cicirello/jacoco-badge-generator@v2
+        with:
+          jacoco-csv-file: spaced-repetition-data/build/reports/jacoco/test/jacocoTestReport.csv
+          coverage-badge-filename: jacoco_spaced_repetition_data.svg
+          coverage-label: coverage (Spaced Repetition Data)
+
+      - name: Commit the badge (if it changed)
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+          git add -A
+          if ! git diff --cached --quiet; then
+            git commit -m "Update coverage badges"
+            git push --force origin HEAD:badges-branch
+          else
+            echo "No changes to commit"
+          fi
+
+      - name: Upload Spaced Repetition Bot Badge to Gist
+        uses: exuanbo/actions-deploy-gist@v1
+        with:
+          token: ${{ secrets.GIT_TOKEN }}
+          gist_id: c27f99167289d841c193513031ab9a48
+          file_path: .github/badges/jacoco_spaced_repetition_bot.svg
+
+      - name: Upload Spaced Repetition Data Badge to Gist
+        uses: exuanbo/actions-deploy-gist@v1
+        with:
+          token: ${{ secrets.GIT_TOKEN }}
+          gist_id: c27f99167289d841c193513031ab9a48
+          file_path: .github/badges/jacoco_spaced_repetition_data.svg

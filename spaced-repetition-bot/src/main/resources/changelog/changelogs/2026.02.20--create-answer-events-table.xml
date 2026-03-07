@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.32.xsd">
+
+    <changeSet id="system--2026.02.20--createAnswerEventsTable" author="system">
+        <createTable tableName="answer_events">
+            <column name="event_id" type="BIGSERIAL">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="user_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deck_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="card_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="quality" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+            <column name="event_timestamp" type="TIMESTAMP" defaultValue="now()">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP" defaultValue="now()">
+                <constraints nullable="false"/>
+            </column>
+            <column name="outbox_id" type="BIGINT"/>
+        </createTable>
+        
+        <sql>
+            ALTER TABLE answer_events ADD CONSTRAINT ck_answer_events_quality 
+            CHECK (quality IN (0, 3, 4, 5));
+        </sql>
+        
+        <createIndex tableName="answer_events" indexName="idx_user_timestamp">
+            <column name="user_id"/>
+            <column name="event_timestamp"/>
+        </createIndex>
+        
+        <createIndex tableName="answer_events" indexName="idx_timestamp">
+            <column name="event_timestamp"/>
+        </createIndex>
+        
+        <createIndex tableName="answer_events" indexName="idx_user_quality">
+            <column name="user_id"/>
+            <column name="quality"/>
+        </createIndex>
+        
+        <createIndex tableName="answer_events" indexName="idx_answer_events_outbox">
+            <column name="outbox_id"/>
+        </createIndex>
+        
+        <addForeignKeyConstraint baseTableName="answer_events"
+                                 baseColumnNames="user_id"
+                                 constraintName="fk_answer_events_user"
+                                 referencedTableName="user_info"
+                                 referencedColumnNames="user_chat_id"/>
+        
+        <addForeignKeyConstraint baseTableName="answer_events"
+                                 baseColumnNames="deck_id"
+                                 constraintName="fk_answer_events_deck"
+                                 referencedTableName="deck"
+                                 referencedColumnNames="deck_id"/>
+        
+        <addForeignKeyConstraint baseTableName="answer_events"
+                                 baseColumnNames="card_id"
+                                 constraintName="fk_answer_events_card"
+                                 referencedTableName="card"
+                                 referencedColumnNames="card_id"/>
+        
+        <sql>
+            COMMENT ON TABLE answer_events IS 'Stores all answer events for statistics analysis';
+            COMMENT ON COLUMN answer_events.quality IS 'Answer quality matches bot Quality enum (AGAIN=0, HARD=3, GOOD=4, EASY=5)';
+            COMMENT ON COLUMN answer_events.outbox_id IS 'Reference to analytics_outbox for audit trail';
+        </sql>
+    </changeSet>
+</databaseChangeLog>

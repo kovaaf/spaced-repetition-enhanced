@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.32.xsd">
+
+    <changeSet id="kovaaf--2025.05.30--createLearningSessionTable" author="kovaaf">
+        <!-- Создаем последовательность для ID сессий -->
+        <createSequence
+                sequenceName="learning_session_seq"
+                startValue="1"
+                incrementBy="1"
+                cacheSize="10"/>
+
+        <!-- Создаем таблицу сессий -->
+        <createTable tableName="learning_session">
+            <column name="session_id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_learning_session"/>
+            </column>
+            <column name="deck_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <!-- Внешний ключ к таблице deck -->
+        <addForeignKeyConstraint
+                baseTableName="learning_session"
+                baseColumnNames="deck_id"
+                constraintName="fk_learning_session_deck"
+                referencedTableName="deck"
+                referencedColumnNames="deck_id"
+                onDelete="CASCADE"/>
+
+        <!-- Создаем таблицу связи сессий и карт -->
+        <createTable tableName="session_cards">
+            <column name="session_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="card_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <!-- Составной первичный ключ -->
+        <addPrimaryKey
+                tableName="session_cards"
+                columnNames="session_id, card_id"
+                constraintName="pk_session_cards"/>
+
+        <!-- Внешние ключи -->
+        <addForeignKeyConstraint
+                baseTableName="session_cards"
+                baseColumnNames="session_id"
+                constraintName="fk_session_cards_session"
+                referencedTableName="learning_session"
+                referencedColumnNames="session_id"
+                onDelete="CASCADE"/>
+
+        <addForeignKeyConstraint
+                baseTableName="session_cards"
+                baseColumnNames="card_id"
+                constraintName="fk_session_cards_card"
+                referencedTableName="card"
+                referencedColumnNames="card_id"
+                onDelete="CASCADE"/>
+
+        <!-- Индексы для быстрого поиска -->
+        <createIndex
+                tableName="session_cards"
+                indexName="idx_session_cards_session_id">
+            <column name="session_id"/>
+        </createIndex>
+
+        <createIndex
+                tableName="session_cards"
+                indexName="idx_session_cards_card_id">
+            <column name="card_id"/>
+        </createIndex>
+    </changeSet>
+</databaseChangeLog>

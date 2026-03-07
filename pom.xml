@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.5.0</version>
+        <relativePath/>
+    </parent>
+
+	<groupId>org.company</groupId>
+	<artifactId>spaced-repetition</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<name>spaced-repetition</name>
+	<description>spaced-repetition</description>
+	<packaging>pom</packaging>
+
+	<modules>
+		<module>spaced-repetition-bot</module>
+		<module>spaced-repetition-ui</module>
+		<module>spaced-repetition-dto</module>
+		<module>spaced-repetition-protobuf</module>
+    </modules>
+
+    <properties>
+        <java.version>17</java.version>
+        <spring-boot.version>3.5.0</spring-boot.version>
+        <spring-cloud.version>2025.0.0</spring-cloud.version>
+        <spring-kafka.version>3.3.7</spring-kafka.version>
+        <springdoc-openapi-ui.version>2.8.9</springdoc-openapi-ui.version>
+        <telegrambots.version>8.3.0</telegrambots.version>
+        <maven-checkstyle-plugin.version>3.6.0</maven-checkstyle-plugin.version>
+        <liquibase-core.version>4.33.0</liquibase-core.version>
+        <org.eclipse.jgit.version>7.3.0.202506031305-r</org.eclipse.jgit.version>
+        <jsch.version>2.27.2</jsch.version>
+        <commonmark.version>0.25.0</commonmark.version>
+        <commons-codec.version>1.18.0</commons-codec.version>
+        <guava.version>33.4.8-jre</guava.version>
+        <jacoco-maven-plugin.version>0.8.13</jacoco-maven-plugin.version>
+<!--    Минимальное покрытие тестами:   -->
+        <jacoco.min.coverage>0.0</jacoco.min.coverage>
+        <!-- gRPC и Protobuf версии -->
+        <grpc.version>1.75.0</grpc.version>
+    </properties>
+
+	<dependencies>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+				<version>${spring-boot.version}</version>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-checkstyle-plugin</artifactId>
+				<version>${maven-checkstyle-plugin.version}</version>
+                <configuration>
+                    <configLocation>checkstyle.xml</configLocation>
+                </configuration>
+				<executions>
+					<execution>
+						<goals>
+							<goal>check</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<version>${jacoco-maven-plugin.version}</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>prepare-agent</goal>
+						</goals>
+					</execution>
+					<!-- attached to Maven verify phase -->
+					<execution>
+						<id>report</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>report</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+
+</project>

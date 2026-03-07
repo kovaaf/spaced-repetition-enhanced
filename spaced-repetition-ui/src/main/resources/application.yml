@@ -1,0 +1,6 @@
+data:
+  servers:
+    - name: Local
+      url: localhost:9091
+    - name: Production
+      url: 45.10.246.127:9091
