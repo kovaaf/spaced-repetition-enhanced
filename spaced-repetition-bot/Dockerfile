@@ -70,4 +70,4 @@ COPY --from=build /workspace/spaced-repetition-bot/target/*.jar app.jar
 HEALTHCHECK --interval=30s --timeout=10s --retries=3 --start-period=120s \
     CMD curl -f http://localhost:8080/actuator/health || exit 1
 
-ENTRYPOINT ["java","-Xmx384m","-Xms128m","-XX:MaxDirectMemorySize=64m","-jar","app.jar"]
+ENTRYPOINT ["java", "-jar", "app.jar"]

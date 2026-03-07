@@ -50,12 +50,7 @@ app:
 
 logging:
   level:
-    org:
-      telegram: warn
-      springframework.jdbc.datasource.init: warn
-      hibernate.SQL: warn
-    liquibase: info
-    org.company.spacedrepetitionbot.service.analytics: INFO
+    root: info
 
 spring:
   application:
@@ -131,7 +126,7 @@ encryption:
 
 git:
   sync:
-    enabled: true
+    enabled: false
     retry:
       max-attempts: 5
       initial-delay-ms: 2000

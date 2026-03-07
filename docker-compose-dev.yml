@@ -5,8 +5,6 @@ services:
     image: postgres:17.5-alpine
     ports:
       - '5430:5432'
-    mem_limit: 64m
-    mem_reservation: 32m
     environment:
       POSTGRES_DB: spaced-repetition-bot-db
       POSTGRES_USER: ${TELEGRAM_BOT_DB_USER:-postgres}
@@ -31,19 +29,34 @@ services:
       dockerfile: spaced-repetition-bot/Dockerfile
     container_name: spaced-repetition-bot
     restart: unless-stopped
-    mem_limit: 384m
-    mem_reservation: 256m
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 120s
+    ports:
+      - "9100:8080"
+      - "9010:9010"  # JMX порт для профилирования
+      - "5005:5005"  # Debug порт (опционально)
     environment:
       _JAVA_OPTIONS: >-
-        -Xmx384m
-        -Xms128m
-        -XX:+UseContainerSupport
-        -XX:MaxMetaspaceSize=192m
-        -XX:MaxDirectMemorySize=64m
+        -XX:MaxRAMPercentage=75.0
+        -XX:+UseG1GC
+        -XX:MaxGCPauseMillis=200
         -XX:+HeapDumpOnOutOfMemoryError
         -XX:HeapDumpPath=/tmp/heapdump-%p-%t.hprof
-        -XX:+ExitOnOutOfMemoryError
-        -Xlog:gc*,heap*:file=/tmp/gc.log:time,level:filecount=3,filesize=10m
+        -Xlog:gc*:file=/tmp/gc-detail.log:time,uptime,level,tags:filecount=5,filesize=20m
+        -Dlogging.level.org.springframework.context.support.PostProcessorRegistrationDelegate=ERROR
+      JAVA_TOOL_OPTIONS: >-
+        -Dcom.sun.management.jmxremote
+        -Dcom.sun.management.jmxremote.port=9010
+        -Dcom.sun.management.jmxremote.rmi.port=9010
+        -Dcom.sun.management.jmxremote.local.only=false
+        -Dcom.sun.management.jmxremote.authenticate=false
+        -Dcom.sun.management.jmxremote.ssl=false
+        -Djava.rmi.server.hostname=localhost
+        -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
       TELEGRAM_BOT_DB_HOST: spaced-repetition-bot-db
       TELEGRAM_BOT_DB_PORT: 5432
       TELEGRAM_BOT_DB_USER: ${TELEGRAM_BOT_DB_USER:-postgres}
@@ -62,8 +75,6 @@ services:
       ANALYTICS_OUTBOX_PROCESSOR_BATCH_SIZE: ${ANALYTICS_OUTBOX_PROCESSOR_BATCH_SIZE:-200}
       ANALYTICS_OUTBOX_PROCESSOR_CRON: ${ANALYTICS_OUTBOX_PROCESSOR_CRON:-*/30 * * * * *}
       DATA_SERVICE_PORT: ${DATA_SERVICE_PORT:-9091}
-    ports:
-      - "9100:8080"
     logging:
       driver: "json-file"
       options:
@@ -72,45 +83,44 @@ services:
     depends_on:
       spaced-repetition-bot-db:
         condition: service_healthy
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 120s
 
   spaced-repetition-data-service:
     build:
       context: .
       dockerfile: spaced-repetition-data/Dockerfile
     container_name: spaced-repetition-data-service-dev
-    restart: on-failure
-    mem_limit: 128m
-    mem_reservation: 64m
+    restart: unless-stopped
+    ports:
+      - "9091:9091"
+      - "8081:8081"  # HTTP health endpoint
+      - "9011:9010"  # JMX порт для data сервиса
     environment:
       _JAVA_OPTIONS: >-
-        -Xmx96m
-        -Xms64m
-        -XX:+UseContainerSupport
-        -XX:MaxRAMPercentage=50.0
+        -XX:+UseG1GC
+        -XX:MaxGCPauseMillis=200
         -XX:+HeapDumpOnOutOfMemoryError
-        -XX:HeapDumpPath=/tmp/heapdump.hprof
-        -XX:+ExitOnOutOfMemoryError
-        -Xlog:gc*,heap*:file=/tmp/gc.log:time,level:filecount=3,filesize=10m
+        -XX:HeapDumpPath=/tmp/heapdump-%p-%t.hprof
+        -Xlog:gc*:file=/tmp/gc-detail.log:time,uptime,level,tags:filecount=5,filesize=20m
+        -XX:+PrintGCDetails
+      JAVA_TOOL_OPTIONS: >-
+        -Dcom.sun.management.jmxremote
+        -Dcom.sun.management.jmxremote.port=9010
+        -Dcom.sun.management.jmxremote.rmi.port=9010
+        -Dcom.sun.management.jmxremote.local.only=false
+        -Dcom.sun.management.jmxremote.authenticate=false
+        -Dcom.sun.management.jmxremote.ssl=false
+        -Djava.rmi.server.hostname=localhost
       DATA_SERVICE_PORT: ${DATA_SERVICE_PORT:-9091}
       DATA_SERVICE_DB_HOST: spaced-repetition-bot-db
       DATA_SERVICE_DB_PORT: 5432
       DATA_SERVICE_DB_NAME: spaced-repetition-bot-db
       DATA_SERVICE_DB_USER: ${TELEGRAM_BOT_DB_USER:-postgres}
       DATA_SERVICE_DB_PASSWORD: ${TELEGRAM_BOT_DB_PASSWORD:-postgres}
-      DATA_SERVICE_DB_MAX_POOL_SIZE: 15
+      DATA_SERVICE_DB_MAX_POOL_SIZE: 10
       DATA_SERVICE_DB_SCHEMA: public
       SPRING_APPLICATION_NAME: spaced-repetition-data
       SERVER_PORT: 8081
       LOGGING_LEVEL_ROOT: INFO
-    ports:
-      - "9091:9091"  # gRPC port for development
-      - "8081:8081"  # HTTP health endpoint
     logging:
       driver: "json-file"
       options:
