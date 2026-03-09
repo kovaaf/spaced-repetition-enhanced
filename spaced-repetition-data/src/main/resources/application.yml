@@ -5,7 +5,7 @@ datasource:
   name: spaced-repetition-bot-db
   username: postgres
   password: postgres
-  schema: bot
+  schema: public
   maxPoolSize: 10
   connectionTimeout: 30000        # миллисекунды
   idleTimeout: 600000              # миллисекунды
@@ -17,7 +17,7 @@ grpc:
 
 # HTTP порт для health-эндпоинтов
 server:
-  port: 8081
+  port: ${HEALTH_SERVER_PORT:8181}
 
 #datasource:
 # url: jdbc:postgresql://${DATA_SERVICE_DB_HOST:localhost}:${DATA_SERVICE_DB_PORT:5432}/${DATA_SERVICE_DB_NAME:spaced-repetition-bot-db}

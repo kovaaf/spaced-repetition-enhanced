@@ -83,7 +83,7 @@ public class Config {
     // ---- HTTP port for health/metrics ----
 
     public int getHttpPort() {
-        return getInt("HTTP_PORT", "server.port", 8081);
+        return getInt("HTTP_PORT", "server.port", 8181);
     }
 
     // ---- Helper methods ----

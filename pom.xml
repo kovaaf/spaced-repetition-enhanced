@@ -38,11 +38,13 @@
         <commonmark.version>0.25.0</commonmark.version>
         <commons-codec.version>1.18.0</commons-codec.version>
         <guava.version>33.4.8-jre</guava.version>
+        <grpc.version>1.75.0</grpc.version>
+        <lombok.version>1.18.42</lombok.version>
+        <log4j.version>2.25.3</log4j.version>
         <jacoco-maven-plugin.version>0.8.13</jacoco-maven-plugin.version>
 <!--    Минимальное покрытие тестами:   -->
         <jacoco.min.coverage>0.0</jacoco.min.coverage>
         <!-- gRPC и Protobuf версии -->
-        <grpc.version>1.75.0</grpc.version>
     </properties>
 
 	<dependencies>
