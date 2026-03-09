@@ -133,9 +133,6 @@ git:
 
 grpc:
   client:
-    myGrpcService:
-      address: 'static://localhost:50051'
-      negotiation-type: plaintext
     analytics-service:
       address: ${DATA_SERVICE_URL:static://localhost:50051}
       negotiation-type: plaintext

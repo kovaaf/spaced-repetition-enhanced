@@ -31,6 +31,8 @@ services:
     depends_on:
       spaced-repetition-bot-db:
         condition: service_healthy
+      spaced-repetition-data-service:
+        condition: service_healthy
     ports:
       - "8080:8080"
     restart: unless-stopped

@@ -1,6 +1,5 @@
 package org.company.spacedrepetitionbot.client.analytics;
 
-import com.google.protobuf.Empty;
 import io.grpc.StatusRuntimeException;
 import lombok.extern.slf4j.Slf4j;
 import net.devh.boot.grpc.client.inject.GrpcClient;
@@ -39,7 +38,7 @@ public class AnalyticsServiceClient {
                                   Quality quality, Instant timestamp) {
         AnalyticsProto.AnswerEvent event = buildAnswerEvent(userId, deckId, cardId, quality, timestamp);
         try {
-            Empty response = analyticsStub.recordAnswerEvent(event);
+            analyticsStub.recordAnswerEvent(event);
             log.debug("Successfully recorded answer event for user {}, card {}", userId, cardId);
         } catch (StatusRuntimeException e) {
             log.error("Failed to record answer event for user {}, card {}: {}", userId, cardId, e.getStatus(), e);
