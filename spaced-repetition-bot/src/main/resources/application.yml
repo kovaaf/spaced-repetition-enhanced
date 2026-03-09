@@ -57,7 +57,7 @@ spring:
     name: spaced-repetition-bot
 
   datasource:
-    url: jdbc:postgresql://${TELEGRAM_BOT_DB_HOST:localhost}:${TELEGRAM_BOT_DB_PORT:5430}/spaced-repetition-bot-db
+    url: jdbc:postgresql://${TELEGRAM_BOT_DB_HOST:localhost}:${TELEGRAM_BOT_DB_PORT:5432}/spaced-repetition-bot-db
     username: ${TELEGRAM_BOT_DB_USER:postgres}
     password: ${TELEGRAM_BOT_DB_PASSWORD:postgres}
     driver-class-name: org.postgresql.Driver

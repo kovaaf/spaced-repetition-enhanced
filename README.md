@@ -30,7 +30,7 @@ docker-compose up -d
 - `docker-compose.yml` uses pre-built image (used in GitHub workflow for production)
 
 **Default port mappings** (when using Docker):
-- PostgreSQL database: `localhost:5430` → `5432` (container)
+- PostgreSQL database: `localhost:5432` → `5432` (container)
 - Bot service: `localhost:9100` → `8080` (container)
 - Data service (gRPC): `localhost:9090` → `9090` (container)
 - Data service (HTTP health): `localhost:8081` → `8081` (container)
@@ -214,7 +214,7 @@ java -jar target/spaced-repetition-ui-0.0.1-SNAPSHOT.jar
 - Data Service gRPC: 9090 (production), 50051 (development)
 - Data Service HTTP Health: 8081
 - Bot Service: 9100
-- PostgreSQL Database: 5430
+- PostgreSQL Database: 5432
 
 ## Additional Resources
 

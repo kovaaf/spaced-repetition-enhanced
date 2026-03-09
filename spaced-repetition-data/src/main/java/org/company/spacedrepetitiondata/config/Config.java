@@ -51,7 +51,7 @@ public class Config {
     }
 
     public int getDatabasePort() {
-        return getInt("DATA_SERVICE_DB_PORT", "datasource.port", 5430);
+        return getInt("DATA_SERVICE_DB_PORT", "datasource.port", 5432);
     }
 
     public String getDatabaseName() {

@@ -4,7 +4,7 @@ services:
     container_name: spaced-repetition-bot-db
     image: postgres:17.5-alpine
     ports:
-      - '5430:5432'
+      - '5432:5432'
     environment:
       POSTGRES_DB: spaced-repetition-bot-db
       POSTGRES_USER: ${TELEGRAM_BOT_DB_USER:-postgres}
