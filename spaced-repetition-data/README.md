@@ -66,7 +66,7 @@ Environment variables:
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `DATA_SERVICE_PORT` | gRPC server port | 9091 |
+| `DATA_SERVICE_PORT` | gRPC server port | 50051 |
 | `SERVER_PORT` | HTTP health endpoint port | 8081 |
 | `DATA_SERVICE_DB_HOST` | PostgreSQL host | localhost |
 | `DATA_SERVICE_DB_PORT` | PostgreSQL port | 5432 |
@@ -92,8 +92,8 @@ cd spaced-repetition-data
 # Build image
 docker build -t spaced-repetition-data .
 
-# Run container (default port 9091 for gRPC, 8081 for HTTP health)
-docker run -p 9091:9091 -p 8081:8081 spaced-repetition-data
+# Run container (default port 50051 for gRPC, 8081 for HTTP health)
+docker run -p 50051:50051 -p 8081:8081 spaced-repetition-data
 
 # Run with custom port (e.g., production port 9090)
 docker run -p 9090:9090 -p 8081:8081 -e DATA_SERVICE_PORT=9090 spaced-repetition-data
@@ -122,10 +122,10 @@ services:
   spaced-repetition-data:
     build: ./spaced-repetition-data
     ports:
-      - "9091:9091"  # gRPC port (development default)
+      - "50051:50051"  # gRPC port (development default)
       - "8081:8081"  # HTTP health endpoint
     environment:
-      DATA_SERVICE_PORT: ${DATA_SERVICE_PORT:-9091}
+      DATA_SERVICE_PORT: ${DATA_SERVICE_PORT:-50051}
     depends_on:
       spaced-repetition-bot-db:
         condition: service_healthy

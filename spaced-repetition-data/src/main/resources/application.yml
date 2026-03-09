@@ -13,7 +13,7 @@ datasource:
 
 # gRPC порт
 grpc:
-  port: 9091
+  port: 50051
 
 # HTTP порт для health-эндпоинтов
 server:
@@ -38,5 +38,5 @@ server:
 # - Metrics: http://localhost:8081/metrics
 #
 # gRPC health protocol (via grpcurl):
-# - Check: grpcurl -plaintext localhost:9091 grpc.health.v1.Health/Check
-# - Watch: grpcurl -plaintext localhost:9091 grpc.health.v1.Health/Watch
+# - Check: grpcurl -plaintext localhost:50051 grpc.health.v1.Health/Check
+# - Watch: grpcurl -plaintext localhost:50051 grpc.health.v1.Health/Watch

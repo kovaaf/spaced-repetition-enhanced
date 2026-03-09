@@ -77,7 +77,7 @@ public class Config {
     // ---- gRPC port ----
 
     public int getGrpcPort() {
-        return getInt("DATA_SERVICE_PORT", "grpc.port", 9091);
+        return getInt("DATA_SERVICE_PORT", "grpc.port", 50051);
     }
 
     // ---- HTTP port for health/metrics ----

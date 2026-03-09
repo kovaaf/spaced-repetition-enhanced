@@ -71,10 +71,10 @@ services:
       GIT_SYNC_ENABLED: ${GIT_SYNC_ENABLED:-true}
       ENCRYPTION_PASSWORD: ${ENCRYPTION_PASSWORD}
       ENCRYPTION_SALT: ${ENCRYPTION_SALT}
-      DATA_SERVICE_URL: static://spaced-repetition-data-service-dev:9091
+      DATA_SERVICE_URL: static://spaced-repetition-data-service-dev:50051
       ANALYTICS_OUTBOX_PROCESSOR_BATCH_SIZE: ${ANALYTICS_OUTBOX_PROCESSOR_BATCH_SIZE:-200}
       ANALYTICS_OUTBOX_PROCESSOR_CRON: ${ANALYTICS_OUTBOX_PROCESSOR_CRON:-*/30 * * * * *}
-      DATA_SERVICE_PORT: ${DATA_SERVICE_PORT:-9091}
+      DATA_SERVICE_PORT: ${DATA_SERVICE_PORT:-50051}
     logging:
       driver: "json-file"
       options:
@@ -91,7 +91,7 @@ services:
     container_name: spaced-repetition-data-service-dev
     restart: unless-stopped
     ports:
-      - "9091:9091"
+      - "50051:50051"
       - "8081:8081"  # HTTP health endpoint
       - "9011:9010"  # JMX порт для data сервиса
     environment:
@@ -110,7 +110,7 @@ services:
         -Dcom.sun.management.jmxremote.authenticate=false
         -Dcom.sun.management.jmxremote.ssl=false
         -Djava.rmi.server.hostname=localhost
-      DATA_SERVICE_PORT: ${DATA_SERVICE_PORT:-9091}
+      DATA_SERVICE_PORT: ${DATA_SERVICE_PORT:-50051}
       DATA_SERVICE_DB_HOST: spaced-repetition-bot-db
       DATA_SERVICE_DB_PORT: 5432
       DATA_SERVICE_DB_NAME: spaced-repetition-bot-db

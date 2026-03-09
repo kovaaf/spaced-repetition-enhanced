@@ -61,7 +61,7 @@ mvn clean compile
 #### Option 1: With Docker Compose (Recommended)
 Start all services including data service:
 ```bash
-# Development (port 9091)
+# Development (port 50051)
 docker-compose -f docker-compose-dev.yml up -d
 
 # Production (port 9090)  
@@ -75,13 +75,13 @@ mvn clean package -DskipTests
 java -jar target/spaced-repetition-ui-0.0.1-SNAPSHOT.jar
 ```
 
-**Important**: For development (port 9091), you must edit `application.properties` to use `localhost:9091` before building the JAR.
+**Important**: For development (port 50051), you must edit `application.properties` to use `localhost:50051` before building the JAR.
 
 #### Option 2: Standalone with Existing Data Service
 If data service is already running:
 
 1. **Configure the correct port** in `application.properties`:
-   - Development (port 9091): `data.service.url=localhost:9091`
+   - Development (port 50051): `data.service.url=localhost:50051`
    - Production (port 9090): `data.service.url=localhost:9090`
 
 2. Build and run UI:
@@ -108,24 +108,24 @@ data.service.url=localhost:9090
 
 **Port Configuration**:
 - **Production**: Port 9090 (data service production port in `docker-compose.yml`)
-- **Development**: Port 9091 (data service default development port in `docker-compose-dev.yml`)
+- **Development**: Port 50051 (data service default development port in `docker-compose-dev.yml`)
 
 **Important Configuration Notes**:
 1. **Configuration Source**: The UI reads **ONLY** from `application.properties` file. System properties (`-Ddata.service.url`) and environment variables are **NOT** supported.
-2. **Default Behavior**: If `application.properties` is not found or cannot be parsed, the UI defaults to `localhost:9091`.
+2. **Default Behavior**: If `application.properties` is not found or cannot be parsed, the UI defaults to `localhost:50051`.
 3. **Development Setup**: For development with `docker-compose-dev.yml`, you **MUST** edit `application.properties`:
    ```properties
-   # Change from 9090 to 9091 for development
-   data.service.url=localhost:9091
+   # Change from 9090 to 50051 for development
+   data.service.url=localhost:50051
    ```
 4. **Production Setup**: For production with `docker-compose.yml`, use the default `localhost:9090`.
 
 ### Configuration Workflow
 
-#### For Development (port 9091):
+#### For Development (port 50051):
 1. Edit `spaced-repetition-ui/src/main/resources/application.properties`:
    ```properties
-   data.service.url=localhost:9091
+   data.service.url=localhost:50051
    ```
 2. Rebuild the JAR:
    ```bash
@@ -253,24 +253,24 @@ mvn test -Dtest="*IntegrationTest" -Djava.awt.headless=true
 
 1. **Connection refused**: Ensure data service is running on the expected host/port:
    - **Production**: Port 9090 (check with `docker-compose up -d`)
-   - **Development**: Port 9091 (check with `docker-compose -f docker-compose-dev.yml up -d`)
+   - **Development**: Port 50051 (check with `docker-compose -f docker-compose-dev.yml up -d`)
    
    **Fix**: Verify `application.properties` has the correct port:
    ```properties
    # For production (9090)
    data.service.url=localhost:9090
    
-   # For development (9091)  
-   data.service.url=localhost:9091
+   # For development (50051)  
+   data.service.url=localhost:50051
    ```
 
 2. **Port mismatch between UI and data service**:
    - Symptom: UI shows "Connection refused" even though data service is running
-   - Cause: UI configured for port 9090 but data service runs on 9091 (or vice versa)
+   - Cause: UI configured for port 9090 but data service runs on 50051 (or vice versa)
    - **Fix**: Edit `application.properties` to match the data service port and rebuild JAR
 
 3. **System property override not working**:
-   - Symptom: `java -Ddata.service.url=localhost:9091 -jar ...` has no effect
+   - Symptom: `java -Ddata.service.url=localhost:50051 -jar ...` has no effect
    - Cause: UI reads **ONLY** from `application.properties`, not system properties
    - **Fix**: Edit `application.properties` directly and rebuild JAR
 

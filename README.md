@@ -181,9 +181,9 @@ java -jar target/spaced-repetition-ui-0.0.1-SNAPSHOT.jar
 # Start services with development configuration
 docker-compose -f docker-compose-dev.yml up -d
 
-# Configure UI for development (port 9091)
+# Configure UI for development (port 50051)
 # Edit spaced-repetition-ui/src/main/resources/application.properties:
-# data.service.url=localhost:9091
+# data.service.url=localhost:50051
 
 # Build and run UI
 cd spaced-repetition-ui
@@ -191,7 +191,7 @@ mvn clean package -DskipTests
 java -jar target/spaced-repetition-ui-0.0.1-SNAPSHOT.jar
 ```
 
-**Note**: For development, you must edit `application.properties` to use `localhost:9091` before building the JAR.
+**Note**: For development, you must edit `application.properties` to use `localhost:50051` before building the JAR.
 
 #### Option 3: UI Only (Existing Data Service)
 If data service is already running:
@@ -199,7 +199,7 @@ If data service is already running:
 1. **Configure the correct port** in `application.properties`:
    - Edit `spaced-repetition-ui/src/main/resources/application.properties`
    - Set `data.service.url=localhost:9090` for production (port 9090)
-   - Set `data.service.url=localhost:9091` for development (port 9091)
+   - Set `data.service.url=localhost:50051` for development (port 50051)
 
 2. Build and run UI:
 ```bash
@@ -211,7 +211,7 @@ java -jar target/spaced-repetition-ui-0.0.1-SNAPSHOT.jar
 **Important**: System property overrides (`-Ddata.service.url`) are **NOT** supported. You must edit `application.properties` directly.
 
 **Default Port Mappings**:
-- Data Service gRPC: 9090 (production), 9091 (development)
+- Data Service gRPC: 9090 (production), 50051 (development)
 - Data Service HTTP Health: 8081
 - Bot Service: 9100
 - PostgreSQL Database: 5430
