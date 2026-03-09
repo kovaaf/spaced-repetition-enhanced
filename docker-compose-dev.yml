@@ -1,15 +1,20 @@
 services:
 
   spaced-repetition-bot-db:
-    container_name: spaced-repetition-bot-db
     image: postgres:17.5-alpine
+    container_name: spaced-repetition-bot-db
     ports:
       - '5432:5432'
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d spaced-repetition-bot-db"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
     environment:
       POSTGRES_DB: spaced-repetition-bot-db
       POSTGRES_USER: ${TELEGRAM_BOT_DB_USER:-postgres}
       POSTGRES_PASSWORD: ${TELEGRAM_BOT_DB_PASSWORD:-postgres}
-    restart: unless-stopped
     logging:
       driver: "json-file"
       options:
@@ -17,17 +22,17 @@ services:
         max-file: 3
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d spaced-repetition-bot-db"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
 
   spaced-repetition-bot:
     build:
       context: .
       dockerfile: spaced-repetition-bot/Dockerfile
     container_name: spaced-repetition-bot
+    depends_on:
+      spaced-repetition-bot-db:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
@@ -35,8 +40,6 @@ services:
       timeout: 10s
       retries: 3
       start_period: 120s
-    ports:
-      - "8080:8080"
     environment:
       _JAVA_OPTIONS: >-
         -XX:+UseG1GC
@@ -68,16 +71,22 @@ services:
       options:
         max-size: 10m
         max-file: 3
-    depends_on:
-      spaced-repetition-bot-db:
-        condition: service_healthy
 
   spaced-repetition-data-service:
     build:
       context: .
       dockerfile: spaced-repetition-data/Dockerfile
     container_name: spaced-repetition-data-service-dev
+    depends_on:
+      spaced-repetition-bot-db:
+        condition: service_healthy
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/health/ready"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
     ports:
       - "50051:50051" # gRPC endpoint
       - "8081:8081"  # HTTP health endpoint
@@ -104,15 +113,6 @@ services:
       options:
         max-size: 10m
         max-file: 3
-    depends_on:
-      spaced-repetition-bot-db:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8081/health/ready"]
-      interval: 15s
-      timeout: 5s
-      retries: 3
-      start_period: 30s
 
 volumes:
   postgres_data:
