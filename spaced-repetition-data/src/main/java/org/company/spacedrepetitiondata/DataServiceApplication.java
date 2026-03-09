@@ -3,6 +3,7 @@ package org.company.spacedrepetitiondata;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import io.grpc.protobuf.services.ProtoReflectionService;
+import lombok.extern.slf4j.Slf4j;
 import org.company.spacedrepetitiondata.config.Config;
 import org.company.spacedrepetitiondata.health.GrpcHealthCheck;
 import org.company.spacedrepetitiondata.health.HealthService;
@@ -10,15 +11,12 @@ import org.company.spacedrepetitiondata.health.HttpHealthEndpoint;
 import org.company.spacedrepetitiondata.health.MetricsEndpoint;
 import org.company.spacedrepetitiondata.repository.AnswerEventRepository;
 import org.company.spacedrepetitiondata.service.AnalyticsServiceImpl;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
+@Slf4j
 public class DataServiceApplication {
-    private static final Logger logger = LoggerFactory.getLogger(DataServiceApplication.class);
-
     private final int port;
     private final Server server;
     private final HealthService healthService;
@@ -43,27 +41,27 @@ public class DataServiceApplication {
         this.httpHealthEndpoint = new HttpHealthEndpoint(healthService, metricsEndpoint, httpPort);
         this.httpHealthEndpoint.start();
 
-        logger.info("Data service initialized with gRPC port {} and HTTP health endpoint on port {}", port, httpPort);
+        log.info("Data service initialized with gRPC port {} and HTTP health endpoint on port {}", port, httpPort);
     }
 
     public void start() throws IOException {
         server.start();
-        logger.info("gRPC server started on port {}", port);
+        log.info("gRPC server started on port {}", port);
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            logger.info("Shutting down gRPC server");
+            log.info("Shutting down gRPC server");
             try {
                 DataServiceApplication.this.stop();
             } catch (InterruptedException e) {
-                logger.error("Error during server shutdown", e);
+                log.error("Error during server shutdown", e);
                 Thread.currentThread().interrupt();
             }
-            logger.info("gRPC server shut down");
+            log.info("gRPC server shut down");
         }));
     }
 
     public void stop() throws InterruptedException {
-        logger.info("Shutting down data service...");
+        log.info("Shutting down data service...");
 
         if (httpHealthEndpoint != null) {
             httpHealthEndpoint.stop();
@@ -77,7 +75,7 @@ public class DataServiceApplication {
         if (server != null) {
             server.shutdown().awaitTermination(30, TimeUnit.SECONDS);
         }
-        logger.info("Data service shut down complete");
+        log.info("Data service shut down complete");
     }
 
     public void blockUntilShutdown() throws InterruptedException {
@@ -90,7 +88,7 @@ public class DataServiceApplication {
         Config config = Config.getInstance();
         int port = config.getGrpcPort();
 
-        logger.info("Starting Spaced Repetition Data Service on port {}", port);
+        log.info("Starting Spaced Repetition Data Service on port {}", port);
         final DataServiceApplication server = new DataServiceApplication();
         server.start();
         server.blockUntilShutdown();

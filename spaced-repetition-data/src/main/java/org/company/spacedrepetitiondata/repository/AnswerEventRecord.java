@@ -6,24 +6,34 @@ import java.util.Objects;
 /**
  * Represents a row in the answer_events table.
  * Immutable value object.
+ *
+ * @param quality   0, 3, 4, 5 per Quality enum
+ * @param userName  optional, joined from bot.user_info
+ * @param deckName  optional, joined from bot.deck
+ * @param cardTitle optional, joined from bot.card
  */
-public final class AnswerEventRecord {
-
-    private final Long userId;
-    private final Long deckId;
-    private final Long cardId;
-    private final int quality; // 0, 3, 4, 5 per Quality enum
-    private final Instant timestamp;
-    private final String userName; // optional, joined from bot.user_info
-    private final String deckName; // optional, joined from bot.deck
-    private final String cardTitle; // optional, joined from bot.card
+public record AnswerEventRecord(Long userId,
+        Long deckId,
+        Long cardId,
+        int quality,
+        Instant timestamp,
+        String userName,
+        String deckName,
+        String cardTitle) {
 
     public AnswerEventRecord(Long userId, Long deckId, Long cardId, int quality, Instant timestamp) {
         this(userId, deckId, cardId, quality, timestamp, null, null, null);
     }
 
-    public AnswerEventRecord(Long userId, Long deckId, Long cardId, int quality, Instant timestamp,
-                            String userName, String deckName, String cardTitle) {
+    public AnswerEventRecord(
+            Long userId,
+            Long deckId,
+            Long cardId,
+            int quality,
+            Instant timestamp,
+            String userName,
+            String deckName,
+            String cardTitle) {
         this.userId = Objects.requireNonNull(userId, "userId must not be null");
         this.deckId = Objects.requireNonNull(deckId, "deckId must not be null");
         this.cardId = Objects.requireNonNull(cardId, "cardId must not be null");
@@ -37,46 +47,18 @@ public final class AnswerEventRecord {
         this.cardTitle = cardTitle;
     }
 
-    public Long getUserId() {
-        return userId;
-    }
-
-    public Long getDeckId() {
-        return deckId;
-    }
-
-    public Long getCardId() {
-        return cardId;
-    }
-
-    public int getQuality() {
-        return quality;
-    }
-
-    public Instant getTimestamp() {
-        return timestamp;
-    }
-
-    public String getUserName() {
-        return userName;
-    }
-
-    public String getDeckName() {
-        return deckName;
-    }
-
-    public String getCardTitle() {
-        return cardTitle;
-    }
-
     private static boolean isValidQuality(int quality) {
         return quality == 0 || quality == 3 || quality == 4 || quality == 5;
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         AnswerEventRecord that = (AnswerEventRecord) o;
         return quality == that.quality &&
                 Objects.equals(userId, that.userId) &&

@@ -52,20 +52,6 @@ public class MetricsEndpoint {
     }
     
     /**
-     * Increments the counter for health checks.
-     */
-    public void incrementHealthChecks() {
-        healthChecks.incrementAndGet();
-    }
-    
-    /**
-     * Increments the counter for health check errors.
-     */
-    public void incrementHealthCheckErrors() {
-        healthCheckErrors.incrementAndGet();
-    }
-    
-    /**
      * Gets the current metrics as Prometheus-style text format.
      * 
      * @return metrics in text format
@@ -98,54 +84,5 @@ public class MetricsEndpoint {
         sb.append("metrics_timestamp ").append(System.currentTimeMillis()).append("\n");
         
         return sb.toString();
-    }
-    
-    /**
-     * Gets the current value of RecordAnswerEvent requests counter.
-     * 
-     * @return request count
-     */
-    public long getRecordAnswerEventRequests() {
-        return recordAnswerEventRequests.get();
-    }
-    
-    /**
-     * Gets the current value of GetAnalytics requests counter.
-     * 
-     * @return request count
-     */
-    public long getGetAnalyticsRequests() {
-        return getAnalyticsRequests.get();
-    }
-    
-    /**
-     * Gets the current value of RecordAnswerEvent errors counter.
-     * 
-     * @return error count
-     */
-    public long getRecordAnswerEventErrors() {
-        return recordAnswerEventErrors.get();
-    }
-    
-    /**
-     * Gets the current value of GetAnalytics errors counter.
-     * 
-     * @return error count
-     */
-    public long getGetAnalyticsErrors() {
-        return getAnalyticsErrors.get();
-    }
-    
-    /**
-     * Resets all metrics counters to zero.
-     * Useful for testing or periodic reset.
-     */
-    public void reset() {
-        recordAnswerEventRequests.set(0);
-        getAnalyticsRequests.set(0);
-        recordAnswerEventErrors.set(0);
-        getAnalyticsErrors.set(0);
-        healthChecks.set(0);
-        healthCheckErrors.set(0);
     }
 }

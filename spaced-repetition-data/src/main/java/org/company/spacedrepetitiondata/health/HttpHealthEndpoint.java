@@ -3,8 +3,8 @@ package org.company.spacedrepetitiondata.health;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -17,9 +17,8 @@ import java.util.concurrent.ThreadPoolExecutor;
  * HTTP health endpoint for readiness and liveness probes.
  * Provides simple HTTP endpoints for container orchestration (Kubernetes, Docker).
  */
+@Slf4j
 public class HttpHealthEndpoint {
-    private static final Logger logger = LoggerFactory.getLogger(HttpHealthEndpoint.class);
-    
     private static final String READINESS_PATH = "/health/ready";
     private static final String LIVENESS_PATH = "/health/live";
     private static final String METRICS_PATH = "/metrics";
@@ -27,6 +26,7 @@ public class HttpHealthEndpoint {
     private final HealthService healthService;
     private final MetricsEndpoint metricsEndpoint;
     private HttpServer httpServer;
+    @Getter
     private final int port;
     
     public HttpHealthEndpoint(HealthService healthService, MetricsEndpoint metricsEndpoint, int port) {
@@ -53,7 +53,7 @@ public class HttpHealthEndpoint {
         httpServer.createContext(METRICS_PATH, new MetricsHandler());
         
         httpServer.start();
-        logger.info("HTTP health endpoint started on port {}", port);
+        log.info("HTTP health endpoint started on port {}", port);
     }
     
     /**
@@ -62,7 +62,7 @@ public class HttpHealthEndpoint {
     public void stop() {
         if (httpServer != null) {
             httpServer.stop(0);
-            logger.info("HTTP health endpoint stopped");
+            log.info("HTTP health endpoint stopped");
         }
     }
     
@@ -85,7 +85,7 @@ public class HttpHealthEndpoint {
                 os.write(response.getBytes(StandardCharsets.UTF_8));
             }
             
-            logger.debug("Readiness probe: {} (status: {})", response, statusCode);
+            log.debug("Readiness probe: {} (status: {})", response, statusCode);
         }
     }
     
@@ -94,7 +94,7 @@ public class HttpHealthEndpoint {
      * Returns 200 OK if service process is alive.
      * Always returns 200 since we're checking if the HTTP server itself is running.
      */
-    private class LivenessHandler implements HttpHandler {
+    private static class LivenessHandler implements HttpHandler {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
             String response = "ALIVE";
@@ -105,7 +105,7 @@ public class HttpHealthEndpoint {
                 os.write(response.getBytes(StandardCharsets.UTF_8));
             }
             
-            logger.debug("Liveness probe: {}", response);
+            log.debug("Liveness probe: {}", response);
         }
     }
     
@@ -125,25 +125,7 @@ public class HttpHealthEndpoint {
                 os.write(metrics.getBytes(StandardCharsets.UTF_8));
             }
             
-            logger.debug("Metrics endpoint accessed");
+            log.debug("Metrics endpoint accessed");
         }
-    }
-    
-    /**
-     * Gets the port the HTTP server is listening on.
-     * 
-     * @return port number
-     */
-    public int getPort() {
-        return port;
-    }
-    
-    /**
-     * Checks if the HTTP server is running.
-     * 
-     * @return true if server is running, false otherwise
-     */
-    public boolean isRunning() {
-        return httpServer != null;
     }
 }

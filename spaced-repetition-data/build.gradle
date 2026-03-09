@@ -45,7 +45,9 @@ dependencies {
     implementation "org.apache.logging.log4j:log4j-slf4j2-impl:$log4jVersion"
 
     implementation "org.yaml:snakeyaml:2.0"
-    implementation "org.projectlombok:lombok:$lombokVersion"
+
+    compileOnly "org.projectlombok:lombok:$lombokVersion"
+    annotationProcessor "org.projectlombok:lombok:$lombokVersion"
     
     // Testing
     testImplementation "org.junit.jupiter:junit-jupiter-api:$junitVersion"

@@ -1,25 +1,21 @@
 package org.company.spacedrepetitiondata.repository;
 
+import lombok.extern.slf4j.Slf4j;
 import org.company.spacedrepetitiondata.config.DatabaseConfig;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.sql.DataSource;
 import java.sql.*;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * JDBC repository for answer_events table.
  * Uses HikariCP connection pool via DatabaseConfig.
  * All methods throw RuntimeException on SQL errors.
  */
+@Slf4j
 public class AnswerEventRepository {
-
-    private static final Logger logger = LoggerFactory.getLogger(AnswerEventRepository.class);
-
     private final DataSource dataSource;
 
     public AnswerEventRepository() {
@@ -27,53 +23,41 @@ public class AnswerEventRepository {
     }
 
     /**
-     * Constructor for testing with custom DataSource.
-     *
-     * @param dataSource custom DataSource (e.g., TestContainers)
-     */
-    public AnswerEventRepository(DataSource dataSource) {
-        this.dataSource = dataSource;
-    }
-
-    /**
      * Inserts a new answer event record into the database.
      *
      * @param record the event record to insert
-     * @return the generated event_id (primary key) or empty if not generated
      * @throws RuntimeException if SQL error occurs
      */
-    public Optional<Long> insert(AnswerEventRecord record) {
-        logger.info("Inserting answer event: userId={}, deckId={}, cardId={}, quality={}, timestamp={}",
-                record.getUserId(), record.getDeckId(), record.getCardId(), record.getQuality(), record.getTimestamp());
+    public void insert(AnswerEventRecord record) {
+        log.info("Inserting answer event: userId={}, deckId={}, cardId={}, quality={}, timestamp={}",
+                record.userId(), record.deckId(), record.cardId(), record.quality(), record.timestamp());
         String sql = "INSERT INTO answer_events (user_id, deck_id, card_id, quality, event_timestamp) " +
                 "VALUES (?, ?, ?, ?, ?)";
         try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            stmt.setLong(1, record.getUserId());
-            stmt.setLong(2, record.getDeckId());
-            stmt.setLong(3, record.getCardId());
-            stmt.setInt(4, record.getQuality());
-            stmt.setTimestamp(5, Timestamp.from(record.getTimestamp()));
+            stmt.setLong(1, record.userId());
+            stmt.setLong(2, record.deckId());
+            stmt.setLong(3, record.cardId());
+            stmt.setInt(4, record.quality());
+            stmt.setTimestamp(5, Timestamp.from(record.timestamp()));
 
             int affectedRows = stmt.executeUpdate();
-            logger.info("INSERT affected rows: {}", affectedRows);
+            log.info("INSERT affected rows: {}", affectedRows);
             if (affectedRows == 0) {
-                logger.error("Failed to insert answer event, no rows affected: {}", record);
-                return Optional.empty();
+                log.error("Failed to insert answer event, no rows affected: {}", record);
+                return;
             }
 
             try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
                     long eventId = generatedKeys.getLong(1);
-                    logger.info("Inserted answer event with ID: {}", eventId);
-                    return Optional.of(eventId);
+                    log.info("Inserted answer event with ID: {}", eventId);
                 } else {
-                    logger.info("No generated key returned for answer event insert");
-                    return Optional.empty();
+                    log.info("No generated key returned for answer event insert");
                 }
             }
         } catch (SQLException e) {
-            logger.error("SQL error inserting answer event: {}", record, e);
+            log.error("SQL error inserting answer event: {}", record, e);
             throw new RuntimeException("Failed to insert answer event", e);
         }
     }
@@ -132,38 +116,13 @@ public class AnswerEventRepository {
                     results.add(record);
                 }
             }
-            logger.debug("Found {} answer events for user {} in time range {} - {}",
+            log.debug("Found {} answer events for user {} in time range {} - {}",
                     results.size(), userId, startTime, endTime);
         } catch (SQLException e) {
-            logger.error("SQL error finding answer events for user {}: {}", userId, e.getMessage(), e);
+            log.error("SQL error finding answer events for user {}: {}", userId, e.getMessage(), e);
             throw new RuntimeException("Failed to retrieve answer events", e);
         }
         return results;
-    }
-
-    /**
-     * Counts total answer events for a specific user.
-     *
-     * @param userId user ID to count
-     * @return total count of answer events for the user
-     * @throws RuntimeException if SQL error occurs
-     */
-    public long countByUserId(Long userId) {
-        String sql = "SELECT COUNT(*) FROM answer_events WHERE user_id = ?";
-        try (Connection conn = dataSource.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setLong(1, userId);
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getLong(1);
-                }
-            }
-            logger.debug("Counted answer events for user {}", userId);
-        } catch (SQLException e) {
-            logger.error("SQL error counting answer events for user {}: {}", userId, e.getMessage(), e);
-            throw new RuntimeException("Failed to count answer events", e);
-        }
-        return 0;
     }
 
     /**
@@ -208,10 +167,10 @@ public class AnswerEventRepository {
                     return rs.getLong(1);
                 }
             }
-            logger.debug("Counted answer events for user {} in time range {} - {}",
+            log.debug("Counted answer events for user {} in time range {} - {}",
                     userId, startTime, endTime);
         } catch (SQLException e) {
-            logger.error("SQL error counting answer events for user {} in time range: {}", userId, e.getMessage(), e);
+            log.error("SQL error counting answer events for user {} in time range: {}", userId, e.getMessage(), e);
             throw new RuntimeException("Failed to count answer events", e);
         }
         return 0;
@@ -266,10 +225,10 @@ public class AnswerEventRepository {
                     results.add(record);
                 }
             }
-            logger.debug("Found {} answer events in time range {} - {}",
+            log.debug("Found {} answer events in time range {} - {}",
                     results.size(), startTime, endTime);
         } catch (SQLException e) {
-            logger.error("SQL error finding answer events in time range: {}", e.getMessage(), e);
+            log.error("SQL error finding answer events in time range: {}", e.getMessage(), e);
             throw new RuntimeException("Failed to retrieve answer events", e);
         }
         return results;
@@ -313,10 +272,10 @@ public class AnswerEventRepository {
                     return rs.getLong(1);
                 }
             }
-            logger.debug("Counted answer events in time range {} - {}",
+            log.debug("Counted answer events in time range {} - {}",
                     startTime, endTime);
         } catch (SQLException e) {
-            logger.error("SQL error counting answer events in time range: {}", e.getMessage(), e);
+            log.error("SQL error counting answer events in time range: {}", e.getMessage(), e);
             throw new RuntimeException("Failed to count answer events", e);
         }
         return 0;
@@ -382,7 +341,7 @@ public class AnswerEventRepository {
                 results.add(new UserRecord(id, name));
             }
         } catch (SQLException e) {
-            logger.error("SQL error fetching users", e);
+            log.error("SQL error fetching users", e);
             throw new RuntimeException("Failed to fetch users", e);
         }
         return results;
@@ -398,66 +357,25 @@ public class AnswerEventRepository {
     public static org.company.spacedrepetitiondata.grpc.AnalyticsProto.AnswerEvent toProto(AnswerEventRecord record) {
         org.company.spacedrepetitiondata.grpc.AnalyticsProto.AnswerEvent.Builder builder = 
                 org.company.spacedrepetitiondata.grpc.AnalyticsProto.AnswerEvent.newBuilder()
-                .setUserId(String.valueOf(record.getUserId()))
-                .setDeckId(String.valueOf(record.getDeckId()))
-                .setCardId(String.valueOf(record.getCardId()))
-                .setQualityValue(record.getQuality())
+                .setUserId(String.valueOf(record.userId()))
+                .setDeckId(String.valueOf(record.deckId()))
+                .setCardId(String.valueOf(record.cardId()))
+                .setQualityValue(record.quality())
                 .setTimestamp(com.google.protobuf.Timestamp.newBuilder()
-                        .setSeconds(record.getTimestamp().getEpochSecond())
-                        .setNanos(record.getTimestamp().getNano())
+                        .setSeconds(record.timestamp().getEpochSecond())
+                        .setNanos(record.timestamp().getNano())
                         .build());
         
-        if (record.getUserName() != null) {
-            builder.setUserName(record.getUserName());
+        if (record.userName() != null) {
+            builder.setUserName(record.userName());
         }
-        if (record.getDeckName() != null) {
-            builder.setDeckName(record.getDeckName());
+        if (record.deckName() != null) {
+            builder.setDeckName(record.deckName());
         }
-        if (record.getCardTitle() != null) {
-            builder.setCardTitle(record.getCardTitle());
+        if (record.cardTitle() != null) {
+            builder.setCardTitle(record.cardTitle());
         }
         
         return builder.build();
     }
-
-    /**
-     * Finds the most recent answer events, ordered by timestamp descending.
-     *
-     * @param limit maximum number of events to return
-     * @return list of recent answer events
-     * @throws RuntimeException if SQL error occurs
-     */
-    public List<AnswerEventRecord> findRecentEvents(int limit) {
-        logger.info("Finding recent answer events with limit={}", limit);
-        String sql = "SELECT ae.event_id, ae.user_id, ae.deck_id, ae.card_id, ae.quality, ae.event_timestamp, " +
-                     "       user_info.user_name AS user_name, " +
-                     "       deck.name AS deck_name, " +
-                     "       card.front AS card_title " +
-                     "FROM answer_events ae " +
-                     "LEFT JOIN user_info ON ae.user_id = user_info.user_chat_id " +
-                     "LEFT JOIN deck ON ae.deck_id = deck.deck_id " +
-                     "LEFT JOIN card ON ae.card_id = card.card_id " +
-                     "ORDER BY ae.event_timestamp DESC " +
-                     "LIMIT ?";
-        
-        List<AnswerEventRecord> events = new ArrayList<>();
-        try (Connection conn = dataSource.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            
-            stmt.setInt(1, limit);
-            
-            try (ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) {
-                    events.add(mapRow(rs));
-                }
-            }
-            
-            logger.info("Found {} recent answer events", events.size());
-            return events;
-            
-        } catch (SQLException e) {
-            logger.error("Error finding recent answer events", e);
-            throw new RuntimeException("Failed to find recent answer events", e);
-        }
-}
 }

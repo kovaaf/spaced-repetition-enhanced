@@ -5,14 +5,13 @@ import io.grpc.Context;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.stub.StreamObserver;
+import lombok.extern.slf4j.Slf4j;
 import org.company.spacedrepetitiondata.grpc.AnalyticsProto;
 import org.company.spacedrepetitiondata.grpc.AnalyticsServiceGrpc;
 import org.company.spacedrepetitiondata.health.MetricsEndpoint;
 import org.company.spacedrepetitiondata.repository.AnswerEventRecord;
 import org.company.spacedrepetitiondata.repository.AnswerEventRepository;
 import org.company.spacedrepetitiondata.repository.UserRecord;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.time.Instant;
 import java.util.List;
@@ -24,8 +23,8 @@ import java.util.concurrent.atomic.AtomicReference;
 /**
  * Implementation of AnalyticsService with metrics tracking.
  */
+@Slf4j
 public class AnalyticsServiceImpl extends AnalyticsServiceGrpc.AnalyticsServiceImplBase {
-    private static final Logger logger = LoggerFactory.getLogger(AnalyticsServiceImpl.class);
     // Quality constants for spaced repetition ratings
     private static final int QUALITY_AGAIN = 0;
     private static final int QUALITY_HARD = 3;
@@ -38,14 +37,6 @@ public class AnalyticsServiceImpl extends AnalyticsServiceGrpc.AnalyticsServiceI
     
     private final MetricsEndpoint metricsEndpoint;
     private final AnswerEventRepository answerEventRepository;
-    
-    public AnalyticsServiceImpl() {
-        this(null, null);
-    }
-    
-    public AnalyticsServiceImpl(MetricsEndpoint metricsEndpoint) {
-        this(new AnswerEventRepository(), metricsEndpoint);
-    }
     
     public AnalyticsServiceImpl(AnswerEventRepository answerEventRepository, MetricsEndpoint metricsEndpoint) {
         this.metricsEndpoint = metricsEndpoint;
@@ -61,7 +52,7 @@ public class AnalyticsServiceImpl extends AnalyticsServiceGrpc.AnalyticsServiceI
                 metricsEndpoint.incrementRecordAnswerEventRequests();
             }
             
-            logger.info("RecordAnswerEvent received: user={}, deck={}, card={}, quality={}", 
+            log.info("RecordAnswerEvent received: user={}, deck={}, card={}, quality={}", 
                         request.getUserId(), request.getDeckId(), request.getCardId(), request.getQuality());
             
             // Validate required fields
@@ -93,14 +84,14 @@ public class AnalyticsServiceImpl extends AnalyticsServiceGrpc.AnalyticsServiceI
             responseObserver.onNext(Empty.getDefaultInstance());
             responseObserver.onCompleted();
             
-            logger.info("RecordAnswerEvent processed successfully");
+            log.info("RecordAnswerEvent processed successfully");
         } catch (Exception e) {
             // Track error metrics if available
             if (metricsEndpoint != null) {
                 metricsEndpoint.incrementRecordAnswerEventErrors();
             }
             
-            logger.error("Error processing RecordAnswerEvent", e);
+            log.error("Error processing RecordAnswerEvent", e);
             
             // Map to appropriate gRPC status
             StatusRuntimeException statusException;
@@ -127,13 +118,13 @@ public class AnalyticsServiceImpl extends AnalyticsServiceGrpc.AnalyticsServiceI
     public void getAnalytics(AnalyticsProto.AnalyticsRequest request,
                              StreamObserver<AnalyticsProto.AnalyticsResponse> responseObserver) {
         try {
-            logger.info("GetAnalytics method invoked");
+            log.info("GetAnalytics method invoked");
             // Track metrics if available
             if (metricsEndpoint != null) {
                 metricsEndpoint.incrementGetAnalyticsRequests();
             }
             
-            logger.info("GetAnalytics received: user={}, startTime={}, endTime={}", 
+            log.info("GetAnalytics received: user={}, startTime={}, endTime={}", 
                         request.getUserId(), request.getStartTime(), request.getEndTime());
             
             // Validate required fields
@@ -174,12 +165,12 @@ public class AnalyticsServiceImpl extends AnalyticsServiceGrpc.AnalyticsServiceI
             List<AnswerEventRecord> events;
             long totalCount;
             if (userId != null) {
-                logger.info("Querying answer events for user {} in time range {} - {}", 
+                log.info("Querying answer events for user {} in time range {} - {}", 
                             userId, startInstant, endInstant);
                 events = answerEventRepository.findByUserIdAndTimeRange(userId, startInstant, endInstant);
                 totalCount = answerEventRepository.countByUserIdAndTimeRange(userId, startInstant, endInstant);
             } else {
-                logger.info("Querying answer events for all users in time range {} - {}", 
+                log.info("Querying answer events for all users in time range {} - {}", 
                             startInstant, endInstant);
                 events = answerEventRepository.findByTimeRange(startInstant, endInstant);
                 totalCount = answerEventRepository.countByTimeRange(startInstant, endInstant);
@@ -196,7 +187,7 @@ public class AnalyticsServiceImpl extends AnalyticsServiceGrpc.AnalyticsServiceI
             responseObserver.onNext(response);
             responseObserver.onCompleted();
             
-            logger.info("GetAnalytics processed successfully: returned {} events, total count {}", 
+            log.info("GetAnalytics processed successfully: returned {} events, total count {}", 
                        events.size(), totalCount);
         } catch (Exception e) {
             // Track error metrics if available
@@ -204,7 +195,7 @@ public class AnalyticsServiceImpl extends AnalyticsServiceGrpc.AnalyticsServiceI
                 metricsEndpoint.incrementGetAnalyticsErrors();
             }
             
-            logger.error("Error processing GetAnalytics", e);
+            log.error("Error processing GetAnalytics", e);
             
             // Map to appropriate gRPC status
             StatusRuntimeException statusException;
@@ -231,7 +222,7 @@ public class AnalyticsServiceImpl extends AnalyticsServiceGrpc.AnalyticsServiceI
     public void getUsers(com.google.protobuf.Empty request,
                          io.grpc.stub.StreamObserver<org.company.spacedrepetitiondata.grpc.AnalyticsProto.UsersResponse> responseObserver) {
         try {
-            logger.info("GetUsers method invoked");
+            log.info("GetUsers method invoked");
             // Track metrics if available
             if (metricsEndpoint != null) {
                 metricsEndpoint.incrementGetAnalyticsRequests(); // Using same metric as GetAnalytics for now
@@ -243,20 +234,20 @@ public class AnalyticsServiceImpl extends AnalyticsServiceGrpc.AnalyticsServiceI
             for (UserRecord user : users) {
                 responseBuilder.addUsers(
                         org.company.spacedrepetitiondata.grpc.AnalyticsProto.User.newBuilder()
-                                .setId(user.getId())
-                                .setName(user.getName() != null ? user.getName() : "")
+                                .setId(user.id())
+                                .setName(user.name() != null ? user.name() : "")
                                 .build()
                 );
             }
             responseObserver.onNext(responseBuilder.build());
             responseObserver.onCompleted();
-            logger.info("GetUsers processed successfully: returned {} users", users.size());
+            log.info("GetUsers processed successfully: returned {} users", users.size());
         } catch (Exception e) {
             // Track error metrics if available
             if (metricsEndpoint != null) {
                 metricsEndpoint.incrementGetAnalyticsErrors();
             }
-            logger.error("Error processing GetUsers", e);
+            log.error("Error processing GetUsers", e);
             StatusRuntimeException statusException;
             if (e instanceof StatusRuntimeException) {
                 statusException = (StatusRuntimeException) e;
@@ -280,8 +271,8 @@ public class AnalyticsServiceImpl extends AnalyticsServiceGrpc.AnalyticsServiceI
         // Declare executor for cleanup (initialized later)
         ScheduledExecutorService executor = null;
         try {
-            logger.info("StreamAnalytics method invoked");
-            logger.info("StreamAnalytics received: user={}, startTime={}, endTime={}", 
+            log.info("StreamAnalytics method invoked");
+            log.info("StreamAnalytics received: user={}, startTime={}, endTime={}", 
                         request.hasUserId() ? request.getUserId() : "(all)", 
                         request.hasStartTime() ? request.getStartTime() : "(none)", 
                         request.hasEndTime() ? request.getEndTime() : "(none)");
@@ -331,11 +322,11 @@ public class AnalyticsServiceImpl extends AnalyticsServiceGrpc.AnalyticsServiceI
             // Query initial events matching filters
             List<AnswerEventRecord> initialEvents;
             if (userId != null) {
-                logger.info("Querying initial answer events for user {} in time range {} - {}", 
+                log.info("Querying initial answer events for user {} in time range {} - {}", 
                             userId, startTime, endTime);
                 initialEvents = answerEventRepository.findByUserIdAndTimeRange(userId, startTime, endTime);
             } else {
-                logger.info("Querying initial answer events for all users in time range {} - {}", 
+                log.info("Querying initial answer events for all users in time range {} - {}", 
                             startTime, endTime);
                 initialEvents = answerEventRepository.findByTimeRange(startTime, endTime);
             }
@@ -346,7 +337,7 @@ public class AnalyticsServiceImpl extends AnalyticsServiceGrpc.AnalyticsServiceI
             );
             if (!initialEvents.isEmpty()) {
                 Instant maxTimestamp = initialEvents.stream()
-                        .map(AnswerEventRecord::getTimestamp)
+                        .map(AnswerEventRecord::timestamp)
                         .max(Instant::compareTo)
                         .orElse(lastSentTimestampRef.get());
                 lastSentTimestampRef.set(maxTimestamp);
@@ -364,7 +355,7 @@ public class AnalyticsServiceImpl extends AnalyticsServiceGrpc.AnalyticsServiceI
                     responseObserver.onNext(response);
                 } catch (StatusRuntimeException e) {
                     if (e.getStatus().getCode() == io.grpc.Status.Code.CANCELLED) {
-                        logger.info("Client cancelled stream during initial event streaming");
+                        log.info("Client cancelled stream during initial event streaming");
                         return;
                     }
                     throw e; // rethrow other StatusRuntimeExceptions
@@ -373,7 +364,7 @@ public class AnalyticsServiceImpl extends AnalyticsServiceGrpc.AnalyticsServiceI
             
             // Check if client already disconnected before scheduling polling
             if (Context.current().isCancelled()) {
-                logger.info("Client disconnected before polling started");
+                log.info("Client disconnected before polling started");
                 return;
             }
             
@@ -393,7 +384,7 @@ public class AnalyticsServiceImpl extends AnalyticsServiceGrpc.AnalyticsServiceI
                 try {
                     // Check if client disconnected
                     if (Context.current().isCancelled()) {
-                        logger.info("Client disconnected, stopping polling");
+                        log.info("Client disconnected, stopping polling");
                         pollingFutureRef[0].cancel(false); // Cancel scheduled future
                         finalExecutor.shutdown();
                         return;
@@ -416,11 +407,11 @@ public class AnalyticsServiceImpl extends AnalyticsServiceGrpc.AnalyticsServiceI
                     
                     // Filter out events with timestamp <= lastSentTimestamp (should not happen due to adjusted start)
                     List<AnswerEventRecord> filteredNewEvents = newEvents.stream()
-                            .filter(record -> record.getTimestamp().isAfter(currentLastSent))
+                            .filter(record -> record.timestamp().isAfter(currentLastSent))
                             .collect(java.util.stream.Collectors.toList());
                     
                     if (!filteredNewEvents.isEmpty()) {
-                        logger.info("Polling found {} new events", filteredNewEvents.size());
+                        log.info("Polling found {} new events", filteredNewEvents.size());
                         // Send new events
                         for (AnswerEventRecord record : filteredNewEvents) {
                             org.company.spacedrepetitiondata.grpc.AnalyticsProto.AnswerEvent event = 
@@ -435,26 +426,26 @@ public class AnalyticsServiceImpl extends AnalyticsServiceGrpc.AnalyticsServiceI
                         }
                         // Update last sent timestamp to max timestamp among new events
                         Instant maxTimestamp = filteredNewEvents.stream()
-                                .map(AnswerEventRecord::getTimestamp)
+                                .map(AnswerEventRecord::timestamp)
                                 .max(Instant::compareTo)
                                 .orElse(currentLastSent);
                         lastSentTimestampRef.set(maxTimestamp);
-                        logger.debug("Updated last sent timestamp to {}", maxTimestamp);
+                        log.debug("Updated last sent timestamp to {}", maxTimestamp);
                     } else {
-                        logger.debug("Polling found no new events");
+                        log.debug("Polling found no new events");
                     }
                 } catch (StatusRuntimeException e) {
                     if (e.getStatus().getCode() == io.grpc.Status.Code.CANCELLED) {
-                        logger.info("Client cancelled stream, stopping polling");
+                        log.info("Client cancelled stream, stopping polling");
                         pollingFutureRef[0].cancel(false); // Cancel scheduled future
                         finalExecutor.shutdown();
                         return;
                     } else {
-                        logger.error("gRPC error during polling for new analytics events", e);
+                        log.error("gRPC error during polling for new analytics events", e);
                         // Continue polling despite other gRPC errors
                     }
                 } catch (Exception e) {
-                    logger.error("Error during polling for new analytics events", e);
+                    log.error("Error during polling for new analytics events", e);
                     // Continue polling despite errors
                 }
             }, STREAMING_INITIAL_DELAY_SECONDS, STREAMING_POLLING_INTERVAL_SECONDS, TimeUnit.SECONDS);
@@ -464,7 +455,7 @@ public class AnalyticsServiceImpl extends AnalyticsServiceGrpc.AnalyticsServiceI
             // Add context listener for immediate cleanup on client cancellation
             Context.current().addListener(context -> {
                 if (context.isCancelled()) {
-                    logger.info("Context cancelled, shutting down polling executor");
+                    log.info("Context cancelled, shutting down polling executor");
                     pollingFutureRef[0].cancel(false); // Interrupt if running
                     finalExecutor.shutdown();
                 }
@@ -480,7 +471,7 @@ public class AnalyticsServiceImpl extends AnalyticsServiceGrpc.AnalyticsServiceI
                 metricsEndpoint.incrementGetAnalyticsErrors();
             }
             
-            logger.error("Error processing StreamAnalytics", e);
+            log.error("Error processing StreamAnalytics", e);
             
             // Clean up executor if it was created
             if (executor != null) {

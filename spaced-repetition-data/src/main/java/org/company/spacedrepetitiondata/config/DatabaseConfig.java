@@ -2,14 +2,13 @@ package org.company.spacedrepetitiondata.config;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.sql.DataSource;
 import java.util.concurrent.TimeUnit;
 
+@Slf4j
 public final class DatabaseConfig {
-    private static final Logger logger = LoggerFactory.getLogger(DatabaseConfig.class);
     private static volatile DataSource dataSource;
 
     private DatabaseConfig() {}
@@ -52,7 +51,7 @@ public final class DatabaseConfig {
         hikariConfig.addDataSourceProperty("tcpKeepAlive", "true");
         hikariConfig.addDataSourceProperty("socketTimeout", "30");
 
-        logger.info("Configured HikariCP connection pool for database: {} (max pool size: {})",
+        log.info("Configured HikariCP connection pool for database: {} (max pool size: {})",
                 jdbcUrl, hikariConfig.getMaximumPoolSize());
 
         return new HikariDataSource(hikariConfig);
@@ -61,7 +60,7 @@ public final class DatabaseConfig {
     public static void closeDataSource() {
         if (dataSource instanceof HikariDataSource) {
             ((HikariDataSource) dataSource).close();
-            logger.info("HikariCP connection pool closed.");
+            log.info("HikariCP connection pool closed.");
         }
     }
 }

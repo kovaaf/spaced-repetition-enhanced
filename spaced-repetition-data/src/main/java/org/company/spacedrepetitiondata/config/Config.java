@@ -1,21 +1,20 @@
 package org.company.spacedrepetitiondata.config;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.InputStream;
 import java.util.Map;
 
+@Slf4j
 public class Config {
-    private static final Logger logger = LoggerFactory.getLogger(Config.class);
     private static volatile Config instance;
 
     private final Map<String, Object> yamlConfig;
 
     private Config() {
         this.yamlConfig = loadYamlConfig();
-        logger.info("Configuration loaded from YAML. Keys: {}", yamlConfig.keySet());
+        log.info("Configuration loaded from YAML. Keys: {}", yamlConfig.keySet());
     }
 
     public static Config getInstance() {
@@ -29,17 +28,16 @@ public class Config {
         return instance;
     }
 
-    @SuppressWarnings("unchecked")
     private Map<String, Object> loadYamlConfig() {
         try (InputStream input = getClass().getClassLoader().getResourceAsStream("application.yml")) {
             if (input == null) {
-                logger.warn("application.yml not found in classpath, using empty config");
+                log.warn("application.yml not found in classpath, using empty config");
                 return Map.of();
             }
             Yaml yaml = new Yaml();
             return yaml.load(input);
         } catch (Exception e) {
-            logger.error("Failed to load application.yml", e);
+            log.error("Failed to load application.yml", e);
             return Map.of();
         }
     }
@@ -91,15 +89,15 @@ public class Config {
     private String getString(String envVar, String yamlPath, String defaultValue) {
         String envValue = System.getenv(envVar);
         if (envValue != null && !envValue.trim().isEmpty()) {
-            logger.debug("Using env var {} = {}", envVar, envValue);
+            log.debug("Using env var {} = {}", envVar, envValue);
             return envValue.trim();
         }
         String yamlValue = getYamlString(yamlPath);
         if (yamlValue != null) {
-            logger.debug("Using YAML value {} = {}", yamlPath, yamlValue);
+            log.debug("Using YAML value {} = {}", yamlPath, yamlValue);
             return yamlValue;
         }
-        logger.debug("Using default value for {} = {}", envVar, defaultValue);
+        log.debug("Using default value for {} = {}", envVar, defaultValue);
         return defaultValue;
     }
 
@@ -108,29 +106,27 @@ public class Config {
         if (envValue != null && !envValue.trim().isEmpty()) {
             try {
                 int val = Integer.parseInt(envValue.trim());
-                logger.debug("Using env var {} = {}", envVar, val);
+                log.debug("Using env var {} = {}", envVar, val);
                 return val;
             } catch (NumberFormatException e) {
-                logger.warn("Invalid integer in env var {}: '{}', falling back to YAML/default", envVar, envValue);
+                log.warn("Invalid integer in env var {}: '{}', falling back to YAML/default", envVar, envValue);
             }
         }
         Integer yamlValue = getYamlInteger(yamlPath);
         if (yamlValue != null) {
-            logger.debug("Using YAML value {} = {}", yamlPath, yamlValue);
+            log.debug("Using YAML value {} = {}", yamlPath, yamlValue);
             return yamlValue;
         }
-        logger.debug("Using default value for {} = {}", envVar, defaultValue);
+        log.debug("Using default value for {} = {}", envVar, defaultValue);
         return defaultValue;
     }
 
-    @SuppressWarnings("unchecked")
     private String getYamlString(String path) {
         Object value = getYamlValue(path);
         if (value == null) return null;
         return value.toString();
     }
 
-    @SuppressWarnings("unchecked")
     private Integer getYamlInteger(String path) {
         Object value = getYamlValue(path);
         if (value == null) return null;
@@ -140,7 +136,7 @@ public class Config {
         try {
             return Integer.parseInt(value.toString());
         } catch (NumberFormatException e) {
-            logger.warn("YAML value at '{}' is not an integer: {}", path, value);
+            log.warn("YAML value at '{}' is not an integer: {}", path, value);
             return null;
         }
     }

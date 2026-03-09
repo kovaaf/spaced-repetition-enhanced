@@ -1,8 +1,7 @@
 package org.company.spacedrepetitiondata.health;
 
+import lombok.extern.slf4j.Slf4j;
 import org.company.spacedrepetitiondata.config.DatabaseConfig;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -18,9 +17,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * Health checker for database connectivity.
  * Periodically tests database connection and logs status.
  */
+@Slf4j
 public class DatabaseHealthChecker {
-    private static final Logger logger = LoggerFactory.getLogger(DatabaseHealthChecker.class);
-    
     private static final String HEALTH_CHECK_QUERY = "SELECT 1";
     private static final long HEALTH_CHECK_INTERVAL_SECONDS = 30;
     
@@ -56,23 +54,23 @@ public class DatabaseHealthChecker {
                 isHealthy.set(healthy);
                 
                 if (healthy) {
-                    logger.debug("Database health check passed");
+                    log.debug("Database health check passed");
                 } else {
-                    logger.warn("Database health check failed: unexpected result {}", result);
+                    log.warn("Database health check failed: unexpected result {}", result);
                 }
                 
                 return healthy;
             } else {
-                logger.warn("Database health check failed: no result returned");
+                log.warn("Database health check failed: no result returned");
                 isHealthy.set(false);
                 return false;
             }
         } catch (SQLException e) {
-            logger.error("Database health check failed with SQL exception", e);
+            log.error("Database health check failed with SQL exception", e);
             isHealthy.set(false);
             return false;
         } catch (Exception e) {
-            logger.error("Database health check failed with unexpected exception", e);
+            log.error("Database health check failed with unexpected exception", e);
             isHealthy.set(false);
             return false;
         }
@@ -95,16 +93,16 @@ public class DatabaseHealthChecker {
             try {
                 checkDatabaseHealth();
                 if (isHealthy.get()) {
-                    logger.info("Database health status: HEALTHY");
+                    log.info("Database health status: HEALTHY");
                 } else {
-                    logger.warn("Database health status: UNHEALTHY");
+                    log.warn("Database health status: UNHEALTHY");
                 }
             } catch (Exception e) {
-                logger.error("Error during scheduled health check", e);
+                log.error("Error during scheduled health check", e);
             }
         }, 0, HEALTH_CHECK_INTERVAL_SECONDS, TimeUnit.SECONDS);
         
-        logger.info("Started periodic database health check (interval: {} seconds)", 
+        log.info("Started periodic database health check (interval: {} seconds)", 
                    HEALTH_CHECK_INTERVAL_SECONDS);
     }
     
@@ -121,6 +119,6 @@ public class DatabaseHealthChecker {
             scheduler.shutdownNow();
             Thread.currentThread().interrupt();
         }
-        logger.info("Database health checker shut down");
+        log.info("Database health checker shut down");
     }
 }
