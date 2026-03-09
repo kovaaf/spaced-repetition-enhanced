@@ -62,7 +62,7 @@ services:
       GIT_SYNC_ENABLED: ${GIT_SYNC_ENABLED:-true}
       ENCRYPTION_PASSWORD: ${ENCRYPTION_PASSWORD}
       ENCRYPTION_SALT: ${ENCRYPTION_SALT}
-      DATA_SERVICE_URL: static://spaced-repetition-data-service-dev:50051
+      DATA_SERVICE_URL: static://spaced-repetition-data-service:50051
       ANALYTICS_OUTBOX_PROCESSOR_BATCH_SIZE: ${ANALYTICS_OUTBOX_PROCESSOR_BATCH_SIZE:-200}
       ANALYTICS_OUTBOX_PROCESSOR_CRON: ${ANALYTICS_OUTBOX_PROCESSOR_CRON:-*/30 * * * * *}
       DATA_SERVICE_PORT: ${DATA_SERVICE_PORT:-50051}
@@ -76,7 +76,7 @@ services:
     build:
       context: .
       dockerfile: spaced-repetition-data/Dockerfile
-    container_name: spaced-repetition-data-service-dev
+    container_name: spaced-repetition-data-service
     depends_on:
       spaced-repetition-bot-db:
         condition: service_healthy
