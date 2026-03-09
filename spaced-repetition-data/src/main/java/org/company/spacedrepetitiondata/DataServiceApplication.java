@@ -23,7 +23,6 @@ public class DataServiceApplication {
     private final Server server;
     private final HealthService healthService;
     private final GrpcHealthCheck grpcHealthCheck;
-    private final MetricsEndpoint metricsEndpoint;
     private final HttpHealthEndpoint httpHealthEndpoint;
 
     public DataServiceApplication() throws IOException {
@@ -31,7 +30,7 @@ public class DataServiceApplication {
         this.port = config.getGrpcPort();
         this.healthService = new HealthService();
         this.grpcHealthCheck = new GrpcHealthCheck(healthService);
-        this.metricsEndpoint = new MetricsEndpoint();
+        MetricsEndpoint metricsEndpoint = new MetricsEndpoint();
 
         AnswerEventRepository answerEventRepository = new AnswerEventRepository();
         this.server = ServerBuilder.forPort(port)
