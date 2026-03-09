@@ -12,7 +12,7 @@ services:
       timeout: 10s
       retries: 5
     environment:
-      POSTGRES_DB: spaced-repetition-bot-db
+      POSTGRES_DB: ${DB_NAME}
       POSTGRES_USER: ${TELEGRAM_BOT_DB_USER:-postgres}
       POSTGRES_PASSWORD: ${TELEGRAM_BOT_DB_PASSWORD:-postgres}
     logging:
@@ -48,7 +48,7 @@ services:
         -XX:HeapDumpPath=/tmp/heapdump-%p-%t.hprof
         -Xlog:gc*:file=/tmp/gc-detail.log:time,uptime,level,tags:filecount=5,filesize=20m
         -Dlogging.level.org.springframework.context.support.PostProcessorRegistrationDelegate=ERROR
-      TELEGRAM_BOT_DB_HOST: spaced-repetition-bot-db
+      TELEGRAM_BOT_DB_HOST: ${DB_NAME}
       TELEGRAM_BOT_DB_PORT: 5432
       TELEGRAM_BOT_DB_USER: ${TELEGRAM_BOT_DB_USER:-postgres}
       TELEGRAM_BOT_DB_PASSWORD: ${TELEGRAM_BOT_DB_PASSWORD:-postgres}
@@ -100,7 +100,7 @@ services:
       DATA_SERVICE_PORT: ${DATA_SERVICE_PORT:-50051}
       DATA_SERVICE_DB_HOST: spaced-repetition-bot-db
       DATA_SERVICE_DB_PORT: 5432
-      DATA_SERVICE_DB_NAME: spaced-repetition-bot-db
+      DATA_SERVICE_DB_NAME: ${DB_NAME}
       DATA_SERVICE_DB_USER: ${TELEGRAM_BOT_DB_USER:-postgres}
       DATA_SERVICE_DB_PASSWORD: ${TELEGRAM_BOT_DB_PASSWORD:-postgres}
       DATA_SERVICE_DB_MAX_POOL_SIZE: 10
