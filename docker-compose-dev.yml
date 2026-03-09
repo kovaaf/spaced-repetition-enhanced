@@ -36,27 +36,15 @@ services:
       retries: 3
       start_period: 120s
     ports:
-      - "9100:8080"
-      - "9010:9010"  # JMX порт для профилирования
-      - "5005:5005"  # Debug порт (опционально)
+      - "8080:8080"
     environment:
       _JAVA_OPTIONS: >-
-        -XX:MaxRAMPercentage=75.0
         -XX:+UseG1GC
         -XX:MaxGCPauseMillis=200
         -XX:+HeapDumpOnOutOfMemoryError
         -XX:HeapDumpPath=/tmp/heapdump-%p-%t.hprof
         -Xlog:gc*:file=/tmp/gc-detail.log:time,uptime,level,tags:filecount=5,filesize=20m
         -Dlogging.level.org.springframework.context.support.PostProcessorRegistrationDelegate=ERROR
-      JAVA_TOOL_OPTIONS: >-
-        -Dcom.sun.management.jmxremote
-        -Dcom.sun.management.jmxremote.port=9010
-        -Dcom.sun.management.jmxremote.rmi.port=9010
-        -Dcom.sun.management.jmxremote.local.only=false
-        -Dcom.sun.management.jmxremote.authenticate=false
-        -Dcom.sun.management.jmxremote.ssl=false
-        -Djava.rmi.server.hostname=localhost
-        -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
       TELEGRAM_BOT_DB_HOST: spaced-repetition-bot-db
       TELEGRAM_BOT_DB_PORT: 5432
       TELEGRAM_BOT_DB_USER: ${TELEGRAM_BOT_DB_USER:-postgres}
@@ -91,9 +79,8 @@ services:
     container_name: spaced-repetition-data-service-dev
     restart: unless-stopped
     ports:
-      - "50051:50051"
+      - "50051:50051" # gRPC endpoint
       - "8081:8081"  # HTTP health endpoint
-      - "9011:9010"  # JMX порт для data сервиса
     environment:
       _JAVA_OPTIONS: >-
         -XX:+UseG1GC
@@ -101,15 +88,6 @@ services:
         -XX:+HeapDumpOnOutOfMemoryError
         -XX:HeapDumpPath=/tmp/heapdump-%p-%t.hprof
         -Xlog:gc*:file=/tmp/gc-detail.log:time,uptime,level,tags:filecount=5,filesize=20m
-        -XX:+PrintGCDetails
-      JAVA_TOOL_OPTIONS: >-
-        -Dcom.sun.management.jmxremote
-        -Dcom.sun.management.jmxremote.port=9010
-        -Dcom.sun.management.jmxremote.rmi.port=9010
-        -Dcom.sun.management.jmxremote.local.only=false
-        -Dcom.sun.management.jmxremote.authenticate=false
-        -Dcom.sun.management.jmxremote.ssl=false
-        -Djava.rmi.server.hostname=localhost
       DATA_SERVICE_PORT: ${DATA_SERVICE_PORT:-50051}
       DATA_SERVICE_DB_HOST: spaced-repetition-bot-db
       DATA_SERVICE_DB_PORT: 5432

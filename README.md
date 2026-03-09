@@ -31,7 +31,7 @@ docker-compose up -d
 
 **Default port mappings** (when using Docker):
 - PostgreSQL database: `localhost:5432` → `5432` (container)
-- Bot service: `localhost:9100` → `8080` (container)
+- Bot service: `localhost:8080` → `8080` (container)
 - Data service (gRPC): `localhost:9090` → `9090` (container)
 - Data service (HTTP health): `localhost:8081` → `8081` (container)
 
@@ -213,7 +213,7 @@ java -jar target/spaced-repetition-ui-0.0.1-SNAPSHOT.jar
 **Default Port Mappings**:
 - Data Service gRPC: 9090 (production), 50051 (development)
 - Data Service HTTP Health: 8081
-- Bot Service: 9100
+- Bot Service: 8080
 - PostgreSQL Database: 5432
 
 ## Additional Resources
