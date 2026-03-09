@@ -30,10 +30,7 @@ public class MainFrame extends JFrame implements TaskView {
     private boolean logsVisible = false;
     private int lastDividerLocation = 0;
 
-    private ButtonGroup themeGroup;
-    private ButtonGroup serverGroup;
-    private List<JRadioButtonMenuItem> themeItems = new ArrayList<>();
-    private List<JRadioButtonMenuItem> serverItems = new ArrayList<>();
+    private final List<JRadioButtonMenuItem> serverItems = new ArrayList<>();
 
     public MainFrame(FilterController filterController, List<ServerInfo> servers, String defaultServerUrl) {
         this.filterController = filterController;
@@ -76,29 +73,19 @@ public class MainFrame extends JFrame implements TaskView {
         JMenuBar menuBar = new JMenuBar();
 
         // Меню Theme
-        JMenu themeMenu = new JMenu("Theme");
-        themeGroup = new ButtonGroup();
-        String[] themeNames = ThemeManager.getAvailableThemeNames();
-
-        for (String name : themeNames) {
-            JRadioButtonMenuItem item = new JRadioButtonMenuItem(name);
-            item.addActionListener(e -> {
-                if (item.isSelected()) {
-                    ThemeManager.applyTheme(name);
-                }
-            });
-            themeGroup.add(item);
-            themeMenu.add(item);
-            themeItems.add(item);
-            if (name.equals("Dark")) {
-                item.setSelected(true);
-            }
-        }
+        JMenu themeMenu = getThemeMenu();
         menuBar.add(themeMenu);
 
         // Меню Source Server
+        JMenu serverMenu = getServerMenu();
+        menuBar.add(serverMenu);
+
+        setJMenuBar(menuBar);
+    }
+
+    private JMenu getServerMenu() {
         JMenu serverMenu = new JMenu("Source Server");
-        serverGroup = new ButtonGroup();
+        ButtonGroup serverGroup = new ButtonGroup();
         List<ServerInfo> servers = serverManager.getServers();
         String currentUrl = serverManager.getCurrentServerUrl();
 
@@ -116,9 +103,28 @@ public class MainFrame extends JFrame implements TaskView {
                 item.setSelected(true);
             }
         }
-        menuBar.add(serverMenu);
+        return serverMenu;
+    }
 
-        setJMenuBar(menuBar);
+    private static JMenu getThemeMenu() {
+        JMenu themeMenu = new JMenu("Theme");
+        ButtonGroup themeGroup = new ButtonGroup();
+        String[] themeNames = ThemeManager.getAvailableThemeNames();
+
+        for (String name : themeNames) {
+            JRadioButtonMenuItem item = new JRadioButtonMenuItem(name);
+            item.addActionListener(e -> {
+                if (item.isSelected()) {
+                    ThemeManager.applyTheme(name);
+                }
+            });
+            themeGroup.add(item);
+            themeMenu.add(item);
+            if (name.equals("Dark")) {
+                item.setSelected(true);
+            }
+        }
+        return themeMenu;
     }
 
     public void toggleLogs() {
