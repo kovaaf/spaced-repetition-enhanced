@@ -23,6 +23,16 @@ public class DataServiceApplication {
     private final GrpcHealthCheck grpcHealthCheck;
     private final HttpHealthEndpoint httpHealthEndpoint;
 
+    public static void main(String[] args) throws IOException, InterruptedException {
+        Config config = Config.getInstance();
+        int port = config.getGrpcPort();
+
+        log.info("Starting Spaced Repetition Data Service on port {}", port);
+        final DataServiceApplication server = new DataServiceApplication();
+        server.start();
+        server.blockUntilShutdown();
+    }
+
     public DataServiceApplication() throws IOException {
         Config config = Config.getInstance();
         this.port = config.getGrpcPort();
@@ -82,15 +92,5 @@ public class DataServiceApplication {
         if (server != null) {
             server.awaitTermination();
         }
-    }
-
-    public static void main(String[] args) throws IOException, InterruptedException {
-        Config config = Config.getInstance();
-        int port = config.getGrpcPort();
-
-        log.info("Starting Spaced Repetition Data Service on port {}", port);
-        final DataServiceApplication server = new DataServiceApplication();
-        server.start();
-        server.blockUntilShutdown();
     }
 }

@@ -93,7 +93,7 @@ public class DatabaseHealthChecker {
             try {
                 checkDatabaseHealth();
                 if (isHealthy.get()) {
-                    log.info("Database health status: HEALTHY");
+                    log.debug("Database health status: HEALTHY");
                 } else {
                     log.warn("Database health status: UNHEALTHY");
                 }

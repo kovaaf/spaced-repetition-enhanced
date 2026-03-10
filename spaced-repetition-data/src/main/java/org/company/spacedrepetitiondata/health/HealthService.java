@@ -46,7 +46,7 @@ public class HealthService {
         isServiceHealthy = databaseHealthy;
         
         if (databaseHealthy) {
-            log.info("Health check passed: database connectivity OK");
+            log.debug("Health check passed: database connectivity OK");
         } else {
             log.warn("Health check failed: database connectivity issue");
         }

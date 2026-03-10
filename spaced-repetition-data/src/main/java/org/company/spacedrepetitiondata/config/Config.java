@@ -65,7 +65,7 @@ public class Config {
     }
 
     public String getDatabaseSchema() {
-        return getString("DATA_SERVICE_DB_SCHEMA", "datasource.schema", "bot");
+        return getString("DATA_SERVICE_DB_SCHEMA", "datasource.schema", "public");
     }
 
     public int getDatabaseMaxPoolSize() {
@@ -81,43 +81,47 @@ public class Config {
     // ---- HTTP port for health/metrics ----
 
     public int getHttpPort() {
-        return getInt("HTTP_PORT", "server.port", 8181);
+        return getInt("HEALTH_SERVER_PORT", "server.port", 8081);
     }
 
     // ---- Helper methods ----
 
     private String getString(String envVar, String yamlPath, String defaultValue) {
         String envValue = System.getenv(envVar);
+        log.info("getInt: env {} = '{}'", envVar, envValue);
         if (envValue != null && !envValue.trim().isEmpty()) {
             log.debug("Using env var {} = {}", envVar, envValue);
             return envValue.trim();
         }
         String yamlValue = getYamlString(yamlPath);
+        log.debug("getInt: yaml {} = {}", yamlPath, yamlValue);
         if (yamlValue != null) {
             log.debug("Using YAML value {} = {}", yamlPath, yamlValue);
             return yamlValue;
         }
-        log.debug("Using default value for {} = {}", envVar, defaultValue);
+        log.info("Using default value for {} = {}", envVar, defaultValue);
         return defaultValue;
     }
 
     private int getInt(String envVar, String yamlPath, int defaultValue) {
         String envValue = System.getenv(envVar);
+        log.debug("getInt: env {} = '{}'", envVar, envValue);
         if (envValue != null && !envValue.trim().isEmpty()) {
             try {
                 int val = Integer.parseInt(envValue.trim());
-                log.debug("Using env var {} = {}", envVar, val);
+                log.debug("Using env {} = {}", envVar, val);
                 return val;
             } catch (NumberFormatException e) {
                 log.warn("Invalid integer in env var {}: '{}', falling back to YAML/default", envVar, envValue);
             }
         }
         Integer yamlValue = getYamlInteger(yamlPath);
+        log.debug("getInt: yaml {} = {}", yamlPath, yamlValue);
         if (yamlValue != null) {
             log.debug("Using YAML value {} = {}", yamlPath, yamlValue);
             return yamlValue;
         }
-        log.debug("Using default value for {} = {}", envVar, defaultValue);
+        log.info("Using default {} = {}", envVar, defaultValue);
         return defaultValue;
     }
 

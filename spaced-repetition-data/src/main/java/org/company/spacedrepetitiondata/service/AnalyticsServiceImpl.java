@@ -408,7 +408,7 @@ public class AnalyticsServiceImpl extends AnalyticsServiceGrpc.AnalyticsServiceI
                     // Filter out events with timestamp <= lastSentTimestamp (should not happen due to adjusted start)
                     List<AnswerEventRecord> filteredNewEvents = newEvents.stream()
                             .filter(record -> record.timestamp().isAfter(currentLastSent))
-                            .collect(java.util.stream.Collectors.toList());
+                            .toList();
                     
                     if (!filteredNewEvents.isEmpty()) {
                         log.info("Polling found {} new events", filteredNewEvents.size());

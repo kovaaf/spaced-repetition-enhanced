@@ -13,8 +13,8 @@ services:
       retries: 5
     environment:
       POSTGRES_DB: ${DB_NAME}
-      POSTGRES_USER: ${TELEGRAM_BOT_DB_USER:-postgres}
-      POSTGRES_PASSWORD: ${TELEGRAM_BOT_DB_PASSWORD:-postgres}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
     logging:
       driver: "json-file"
       options:
@@ -22,6 +22,48 @@ services:
         max-file: 3
     volumes:
       - postgres_data:/var/lib/postgresql/data
+
+  spaced-repetition-data-service:
+    build:
+      context: .
+      dockerfile: spaced-repetition-data/Dockerfile
+    container_name: spaced-repetition-data-service
+    depends_on:
+      spaced-repetition-bot-db:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8081/health/ready" ]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    ports:
+      - "50051:50051" # gRPC endpoint
+      - "8081:8081"  # HTTP health endpoint
+    environment:
+      _JAVA_OPTIONS: >-
+        -XX:+UseG1GC
+        -XX:MaxGCPauseMillis=200
+        -XX:+HeapDumpOnOutOfMemoryError
+        -XX:HeapDumpPath=/tmp/heapdump-%p-%t.hprof
+        -Xlog:gc*:file=/tmp/gc-detail.log:time,uptime,level,tags:filecount=5,filesize=20m
+      DATA_SERVICE_PORT: ${DATA_SERVICE_PORT:-50051}
+      DATA_SERVICE_DB_HOST: spaced-repetition-bot-db
+      DATA_SERVICE_DB_PORT: ${DB_PORT:-5432}
+      DATA_SERVICE_DB_NAME: ${DB_NAME}
+      DATA_SERVICE_DB_USER: ${DB_USER:-postgres}
+      DATA_SERVICE_DB_PASSWORD: ${DB_PASSWORD:-postgres}
+      DATA_SERVICE_DB_MAX_POOL_SIZE: 10
+      DATA_SERVICE_DB_SCHEMA: public
+      SPRING_APPLICATION_NAME: spaced-repetition-data
+      HEALTH_SERVER_PORT: 8081
+      LOGGING_LEVEL_ROOT: INFO
+    logging:
+      driver: "json-file"
+      options:
+        max-size: 10m
+        max-file: 3
 
   spaced-repetition-bot:
     build:
@@ -52,8 +94,8 @@ services:
         -Dlogging.level.org.springframework.context.support.PostProcessorRegistrationDelegate=ERROR
       TELEGRAM_BOT_DB_HOST: ${DB_NAME}
       TELEGRAM_BOT_DB_PORT: ${DB_PORT:-5432}
-      TELEGRAM_BOT_DB_USER: ${TELEGRAM_BOT_DB_USER:-postgres}
-      TELEGRAM_BOT_DB_PASSWORD: ${TELEGRAM_BOT_DB_PASSWORD:-postgres}
+      TELEGRAM_BOT_DB_USER: ${DB_USER:-postgres}
+      TELEGRAM_BOT_DB_PASSWORD: ${DB_PASSWORD:-postgres}
       TELEGRAM_BOT_PORT: ${TELEGRAM_BOT_PORT:-8080}
       TELEGRAM_BOT_NAME: ${TELEGRAM_BOT_NAME:-SpacedRepetitionBot}
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
@@ -68,48 +110,6 @@ services:
       ANALYTICS_OUTBOX_PROCESSOR_BATCH_SIZE: ${ANALYTICS_OUTBOX_PROCESSOR_BATCH_SIZE:-200}
       ANALYTICS_OUTBOX_PROCESSOR_CRON: ${ANALYTICS_OUTBOX_PROCESSOR_CRON:-*/30 * * * * *}
       DATA_SERVICE_PORT: ${DATA_SERVICE_PORT:-50051}
-    logging:
-      driver: "json-file"
-      options:
-        max-size: 10m
-        max-file: 3
-
-  spaced-repetition-data-service:
-    build:
-      context: .
-      dockerfile: spaced-repetition-data/Dockerfile
-    container_name: spaced-repetition-data-service
-    depends_on:
-      spaced-repetition-bot-db:
-        condition: service_healthy
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8081/health/ready"]
-      interval: 15s
-      timeout: 5s
-      retries: 3
-      start_period: 30s
-    ports:
-      - "50051:50051" # gRPC endpoint
-      - "8081:8081"  # HTTP health endpoint
-    environment:
-      _JAVA_OPTIONS: >-
-        -XX:+UseG1GC
-        -XX:MaxGCPauseMillis=200
-        -XX:+HeapDumpOnOutOfMemoryError
-        -XX:HeapDumpPath=/tmp/heapdump-%p-%t.hprof
-        -Xlog:gc*:file=/tmp/gc-detail.log:time,uptime,level,tags:filecount=5,filesize=20m
-      DATA_SERVICE_PORT: ${DATA_SERVICE_PORT:-50051}
-      DATA_SERVICE_DB_HOST: spaced-repetition-bot-db
-      DATA_SERVICE_DB_PORT: ${DB_PORT:-5432}
-      DATA_SERVICE_DB_NAME: ${DB_NAME}
-      DATA_SERVICE_DB_USER: ${TELEGRAM_BOT_DB_USER:-postgres}
-      DATA_SERVICE_DB_PASSWORD: ${TELEGRAM_BOT_DB_PASSWORD:-postgres}
-      DATA_SERVICE_DB_MAX_POOL_SIZE: 10
-      DATA_SERVICE_DB_SCHEMA: public
-      SPRING_APPLICATION_NAME: spaced-repetition-data
-      HEALTH_SERVER_PORT: 8081
-      LOGGING_LEVEL_ROOT: INFO
     logging:
       driver: "json-file"
       options:
