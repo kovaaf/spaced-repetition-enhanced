@@ -6,6 +6,10 @@ import org.company.presentation.presenter.FilterPresenter;
 import javax.swing.*;
 import java.awt.*;
 
+/**
+ * Panel containing buttons for each predefined time filter.
+ * Clicking a button delegates the action to the {@link FilterPresenter}.
+ */
 public class FilterPanel extends JPanel {
     public FilterPanel(FilterPresenter presenter) {
         setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));

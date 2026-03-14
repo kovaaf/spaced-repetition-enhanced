@@ -1,4 +1,4 @@
-package org.company.infrastructure.config;
+package org.company.config;
 
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -10,6 +10,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Loads application configuration from {@code application.yml} placed in the classpath.
+ * Provides a list of available servers and the default server URL.
+ */
 @Slf4j
 public class AppProperties {
     @Getter

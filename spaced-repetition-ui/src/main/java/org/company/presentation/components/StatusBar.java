@@ -5,6 +5,11 @@ import org.company.presentation.MainFrame;
 import javax.swing.*;
 import java.awt.*;
 
+/**
+ * Status bar displayed at the bottom of the main window.
+ * Shows current status, a success icon, a progress bar, a cancel button,
+ * and a toggle button for the log panel.
+ */
 public class StatusBar extends JPanel {
     private final JLabel statusLabel = new JLabel("Готов");
     private final JLabel successIcon = new JLabel("✓");

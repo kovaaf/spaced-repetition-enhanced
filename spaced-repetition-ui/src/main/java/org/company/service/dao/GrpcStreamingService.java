@@ -1,10 +1,9 @@
-package org.company.infrastructure.data;
+package org.company.service.dao;
 
 import io.grpc.StatusRuntimeException;
 import lombok.extern.slf4j.Slf4j;
 import org.company.domain.AnswerEvent;
-import org.company.domain.StreamingListener;
-import org.company.domain.StreamingService;
+import org.company.presentation.presenter.StreamingListener;
 import org.company.spacedrepetitiondata.grpc.AnalyticsProto;
 import org.company.spacedrepetitiondata.grpc.AnalyticsServiceGrpc;
 
@@ -12,6 +11,10 @@ import java.time.Instant;
 import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+/**
+ * gRPC‐based implementation of {@link StreamingService}.
+ * Uses a blocking stub to stream events and runs the iteration in a dedicated daemon thread.
+ */
 @Slf4j
 public class GrpcStreamingService implements StreamingService {
     private final AnalyticsServiceGrpc.AnalyticsServiceBlockingStub blockingStub;

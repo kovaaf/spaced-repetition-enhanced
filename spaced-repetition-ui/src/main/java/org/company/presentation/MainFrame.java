@@ -12,13 +12,16 @@ import org.company.presentation.components.StatusBar;
 import org.company.presentation.presenter.FilterPresenter;
 import org.company.presentation.presenter.ServerPresenter;
 import org.company.presentation.theme.ThemeManager;
-import org.company.presentation.view.TaskView;
 
 import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Main application window.
+ * Implements {@link TaskView} and delegates user actions to the presenters.
+ */
 @Slf4j
 public class MainFrame extends JFrame implements TaskView {
     private final DataTable dataTable;
@@ -122,6 +125,10 @@ public class MainFrame extends JFrame implements TaskView {
         return themeMenu;
     }
 
+    /**
+     * Ensures that the filter panel is created and added to the frame.
+     * Should be called after the filter presenter is set.
+     */
     public void ensureFilterPanel() {
         if (filterPanel == null && filterPresenter != null) {
             filterPanel = new FilterPanel(filterPresenter);
@@ -131,6 +138,9 @@ public class MainFrame extends JFrame implements TaskView {
         }
     }
 
+    /**
+     * Toggles the visibility of the log panel.
+     */
     public void toggleLogs() {
         if (logsVisible) {
             lastDividerLocation = splitPane.getDividerLocation();
@@ -158,6 +168,9 @@ public class MainFrame extends JFrame implements TaskView {
         logsVisible = !logsVisible;
     }
 
+    /**
+     * Cancels ongoing data loading (delegates to the filter presenter).
+     */
     public void cancelLoading() {
         if (filterPresenter != null) {
             filterPresenter.cancelLoading();

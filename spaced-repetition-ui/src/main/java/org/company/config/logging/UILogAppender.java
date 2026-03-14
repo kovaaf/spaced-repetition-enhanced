@@ -1,4 +1,4 @@
-package org.company.infrastructure.logging;
+package org.company.config.logging;
 
 import org.apache.logging.log4j.core.Filter;
 import org.apache.logging.log4j.core.Layout;
@@ -11,6 +11,9 @@ import org.company.presentation.components.LogPanel;
 import javax.swing.*;
 import java.io.Serializable;
 
+/**
+ * Log4j2 appender that forwards log messages to a {@link LogPanel} in the UI.
+ */
 public class UILogAppender extends AbstractAppender {
     private final LogPanel logPanel;
 

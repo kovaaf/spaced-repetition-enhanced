@@ -1,15 +1,20 @@
-package org.company.application.usecase;
+package org.company.service.usecases;
 
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.company.domain.ServerInfo;
-import org.company.infrastructure.data.DataService;
-import org.company.infrastructure.data.DataServiceFactory;
-import org.company.infrastructure.data.ServerConnectionChecker;
+import org.company.service.dao.DataService;
+import org.company.service.dao.DataServiceFactory;
+import org.company.service.utility.ServerConnectionChecker;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+/**
+ * Use case for switching the active server.
+ * Performs a connection check, creates a new {@link DataService} if successful,
+ * and notifies all registered listeners about the change.
+ */
 @Slf4j
 public class SwitchServerUseCase {
     private final List<ServerInfo> availableServers;
@@ -31,6 +36,13 @@ public class SwitchServerUseCase {
                 .orElseThrow(() -> new IllegalArgumentException("Default server not found"));
     }
 
+    /**
+     * Attempts to switch to the server with the given name.
+     * If the switch succeeds, all listeners receive {@code onServerSwitched};
+     * otherwise {@code onServerSwitchFailed} is called.
+     *
+     * @param serverName the name of the target server (must be in availableServers)
+     */
     public void switchToServer(String serverName) {
         availableServers.stream()
                 .filter(s -> s.name().equals(serverName))
@@ -54,10 +66,20 @@ public class SwitchServerUseCase {
                 });
     }
 
+    /**
+     * Adds a listener that will be notified about server switch events.
+     *
+     * @param listener the listener to add
+     */
     public void addListener(ServerSwitchListener listener) {
         listeners.add(listener);
     }
 
+    /**
+     * Removes a previously added listener.
+     *
+     * @param listener the listener to remove
+     */
     public void removeListener(ServerSwitchListener listener) {
         listeners.remove(listener);
     }

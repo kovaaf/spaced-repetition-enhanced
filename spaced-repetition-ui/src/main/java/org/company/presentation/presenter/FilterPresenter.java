@@ -1,13 +1,12 @@
 package org.company.presentation.presenter;
 
 import lombok.extern.slf4j.Slf4j;
-import org.company.application.usecase.LoadDataUseCase;
-import org.company.application.usecase.StreamingUseCase;
 import org.company.domain.AnswerEvent;
-import org.company.domain.StreamingListener;
 import org.company.domain.TimeFilter;
-import org.company.domain.exception.DataServiceException;
-import org.company.presentation.view.TaskView;
+import org.company.exception.DataServiceException;
+import org.company.presentation.TaskView;
+import org.company.service.usecases.LoadDataUseCase;
+import org.company.service.usecases.StreamingUseCase;
 
 import javax.swing.*;
 import java.time.Instant;
@@ -15,6 +14,10 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+/**
+ * Presenter for the filtering and streaming functionality.
+ * Orchestrates data loading and streaming, updates the view, and handles cancellation.
+ */
 @Slf4j
 public class FilterPresenter {
     private final LoadDataUseCase loadDataUseCase;
@@ -30,6 +33,13 @@ public class FilterPresenter {
         this.view = view;
     }
 
+    /**
+     * Called when a time filter button is pressed.
+     * Cancels any ongoing operations, clears the table, loads historical data,
+     * and then starts streaming from the most recent loaded event (or a fallback time).
+     *
+     * @param filter the selected time range
+     */
     public void onFilterSelected(TimeFilter filter) {
         cancelCurrentOperations();
 
@@ -109,6 +119,9 @@ public class FilterPresenter {
         currentWorker.execute();
     }
 
+    /**
+     * Cancels any ongoing data loading and stops the stream.
+     */
     public void cancelLoading() {
         cancelCurrentOperations();
     }
@@ -131,6 +144,10 @@ public class FilterPresenter {
         };
     }
 
+    /**
+     * Shuts down the internal executor and stops all operations.
+     * Called when the application is closing.
+     */
     public void shutdown() {
         executor.shutdownNow();
         cancelCurrentOperations();

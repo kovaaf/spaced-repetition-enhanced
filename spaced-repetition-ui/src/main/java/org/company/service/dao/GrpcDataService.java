@@ -1,4 +1,4 @@
-package org.company.infrastructure.data;
+package org.company.service.dao;
 
 import com.google.protobuf.Timestamp;
 import io.grpc.ManagedChannel;
@@ -8,7 +8,7 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.company.domain.AnswerEvent;
 import org.company.domain.TimeFilter;
-import org.company.domain.exception.DataServiceException;
+import org.company.exception.DataServiceException;
 import org.company.spacedrepetitiondata.grpc.AnalyticsProto;
 import org.company.spacedrepetitiondata.grpc.AnalyticsServiceGrpc;
 
@@ -17,6 +17,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * gRPC‐based implementation of {@link DataService}.
+ * Communicates with a remote server that provides the Analytics service.
+ */
 @Slf4j
 public class GrpcDataService implements DataService {
     private final String target;
@@ -90,6 +94,11 @@ public class GrpcDataService implements DataService {
                 timestamp);
     }
 
+    /**
+     * Shuts down the gRPC channel gracefully.
+     *
+     * @throws InterruptedException if the shutdown is interrupted
+     */
     public void shutdown() throws InterruptedException {
         channel.shutdown();
         log.info("gRPC channel shutdown initiated for {}", target);

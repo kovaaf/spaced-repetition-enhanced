@@ -11,6 +11,10 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Custom JTable that displays answer events.
+ * Provides column rendering, sorting (via header click) and a specialized quality renderer.
+ */
 public class DataTable extends JTable {
     private final AnswerTableModel model;
     private final TableSortHandler sortHandler;
@@ -63,15 +67,28 @@ public class DataTable extends JTable {
         };
     }
 
+    /**
+     * Replaces the entire table content with the given list.
+     *
+     * @param data new list of events
+     */
     public void setData(List<AnswerEvent> data) {
         model.setData(data);
         sortHandler.resetToDefaultSort();
     }
 
+    /**
+     * Appends a single event to the table.
+     *
+     * @param event the event to add
+     */
     public void addEvent(AnswerEvent event) {
         model.addEvent(event);
     }
 
+    /**
+     * Removes all rows from the table.
+     */
     public void clearData() {
         model.clearData();
     }

@@ -10,6 +10,10 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Supplier;
 
+/**
+ * Manages application themes using FlatLaf Look & Feels.
+ * Provides a list of available themes and allows applying them at runtime.
+ */
 @Slf4j
 public class ThemeManager {
     private static final Map<String, Supplier<LookAndFeel>> themes = new LinkedHashMap<>();
@@ -23,10 +27,21 @@ public class ThemeManager {
         // themes.put("Darcula", FlatDarculaLaf::new);
     }
 
+    /**
+     * Returns the names of all registered themes.
+     *
+     * @return array of theme names
+     */
     public static String[] getAvailableThemeNames() {
         return themes.keySet().toArray(String[]::new);
     }
 
+    /**
+     * Applies the theme with the given name to the whole application.
+     * Updates all open windows.
+     *
+     * @param themeName the name of the theme (case‑sensitive)
+     */
     public static void applyTheme(String themeName) {
         Supplier<LookAndFeel> supplier = themes.get(themeName);
         if (supplier == null) {
@@ -36,7 +51,6 @@ public class ThemeManager {
         LookAndFeel laf = supplier.get();
         try {
             UIManager.setLookAndFeel(laf);
-            // Обновляем все открытые окна
             for (Window window : Window.getWindows()) {
                 SwingUtilities.updateComponentTreeUI(window);
             }

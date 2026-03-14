@@ -5,6 +5,11 @@ import javax.swing.table.TableRowSorter;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Handles cyclic sorting behaviour for a {@link TableRowSorter}.
+ * Provides a custom click cycle: for the default column it toggles between ASC/DESC,
+ * for other columns it cycles ASC → DESC → default sort.
+ */
 public class TableSortHandler {
     private final TableRowSorter<?> sorter;
     private final int defaultSortColumn;
@@ -16,6 +21,11 @@ public class TableSortHandler {
         this.defaultSortOrder = defaultSortOrder;
     }
 
+    /**
+     * Processes a click on a column header.
+     *
+     * @param column the index of the clicked column
+     */
     public void handleColumnClick(int column) {
         List<? extends RowSorter.SortKey> currentKeys = sorter.getSortKeys();
         SortOrder currentOrder = null;
@@ -46,6 +56,9 @@ public class TableSortHandler {
         sorter.setSortKeys(newKeys.isEmpty() ? null : newKeys);
     }
 
+    /**
+     * Resets the sort order to the default (sort by default column in default order).
+     */
     public void resetToDefaultSort() {
         List<RowSorter.SortKey> defaultKeys = new ArrayList<>();
         defaultKeys.add(new RowSorter.SortKey(defaultSortColumn, defaultSortOrder));

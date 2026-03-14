@@ -1,14 +1,18 @@
 package org.company.presentation.presenter;
 
 import lombok.extern.slf4j.Slf4j;
-import org.company.application.usecase.ServerSwitchListener;
-import org.company.application.usecase.SwitchServerUseCase;
 import org.company.domain.ServerInfo;
-import org.company.infrastructure.data.DataService;
-import org.company.presentation.view.TaskView;
+import org.company.presentation.TaskView;
+import org.company.service.dao.DataService;
+import org.company.service.usecases.ServerSwitchListener;
+import org.company.service.usecases.SwitchServerUseCase;
 
 import javax.swing.*;
 
+/**
+ * Presenter for server switching functionality.
+ * Listens to server switch events and updates the view accordingly.
+ */
 @Slf4j
 public class ServerPresenter implements ServerSwitchListener {
     private final SwitchServerUseCase switchServerUseCase;
@@ -22,6 +26,11 @@ public class ServerPresenter implements ServerSwitchListener {
         this.switchServerUseCase.addListener(this);
     }
 
+    /**
+     * Initiates a switch to the server with the given name.
+     *
+     * @param serverName the name of the target server
+     */
     public void onServerSelected(String serverName) {
         switchServerUseCase.switchToServer(serverName);
     }
