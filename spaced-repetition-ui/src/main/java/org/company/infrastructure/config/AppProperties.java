@@ -1,7 +1,8 @@
-package org.company.config;
+package org.company.infrastructure.config;
 
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.company.domain.ServerInfo;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.InputStream;
@@ -32,7 +33,6 @@ public class AppProperties {
                 throw new RuntimeException("Missing 'data' section in application.yml");
             }
 
-            // Загружаем список серверов
             List<Map<String, String>> serversList = (List<Map<String, String>>) data.get("servers");
             if (serversList != null) {
                 for (Map<String, String> serverMap : serversList) {
@@ -44,7 +44,6 @@ public class AppProperties {
                 }
             }
 
-            // URL по умолчанию (берётся из data.service.url или первого сервера в списке)
             Map<String, Object> service = (Map<String, Object>) data.get("service");
             if (service != null && service.get("url") != null) {
                 defaultServerUrl = (String) service.get("url");

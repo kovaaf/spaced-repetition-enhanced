@@ -1,15 +1,16 @@
 package org.company.presentation;
 
 import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.company.application.FilterController;
-import org.company.application.ServerManager;
-import org.company.config.ServerInfo;
 import org.company.domain.AnswerEvent;
+import org.company.domain.ServerInfo;
 import org.company.presentation.components.DataTable;
 import org.company.presentation.components.FilterPanel;
 import org.company.presentation.components.LogPanel;
 import org.company.presentation.components.StatusBar;
+import org.company.presentation.presenter.FilterPresenter;
+import org.company.presentation.presenter.ServerPresenter;
 import org.company.presentation.theme.ThemeManager;
 import org.company.presentation.view.TaskView;
 
@@ -20,8 +21,6 @@ import java.util.List;
 
 @Slf4j
 public class MainFrame extends JFrame implements TaskView {
-    private final FilterController filterController;
-    private final ServerManager serverManager;
     private final DataTable dataTable;
     private final StatusBar statusBar;
     @Getter
@@ -30,14 +29,19 @@ public class MainFrame extends JFrame implements TaskView {
     private boolean logsVisible = false;
     private int lastDividerLocation = 0;
 
-    private final List<JRadioButtonMenuItem> serverItems = new ArrayList<>();
+    private final List<JRadioButtonMenuItem> serverMenuItems = new ArrayList<>();
 
-    public MainFrame(FilterController filterController, List<ServerInfo> servers, String defaultServerUrl) {
-        this.filterController = filterController;
+    @Setter
+    private FilterPresenter filterPresenter;
+    @Setter
+    private ServerPresenter serverPresenter;
+
+    private FilterPanel filterPanel;
+
+    public MainFrame(List<ServerInfo> servers, String defaultServerUrl) {
         this.dataTable = new DataTable();
         this.statusBar = new StatusBar(this);
         this.logPanel = new LogPanel();
-        this.serverManager = new ServerManager(servers, filterController, this, defaultServerUrl);
 
         JScrollPane tableScroll = new JScrollPane(dataTable);
         tableScroll.setBorder(BorderFactory.createTitledBorder("Данные"));
@@ -45,23 +49,23 @@ public class MainFrame extends JFrame implements TaskView {
         splitPane.setResizeWeight(1.0);
 
         initUI();
-        createMenuBar();
+        createMenuBar(servers, defaultServerUrl);
 
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         addWindowListener(new java.awt.event.WindowAdapter() {
             @Override
             public void windowClosing(java.awt.event.WindowEvent e) {
-                serverManager.shutdown();
+                if (filterPresenter != null) {
+                    filterPresenter.shutdown();
+                }
             }
         });
     }
 
     private void initUI() {
         setTitle("Data Viewer");
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 
-        FilterPanel filterPanel = new FilterPanel(filterController);
-        add(filterPanel, BorderLayout.NORTH);
         add(splitPane, BorderLayout.CENTER);
         add(statusBar, BorderLayout.SOUTH);
 
@@ -69,44 +73,35 @@ public class MainFrame extends JFrame implements TaskView {
         setLocationRelativeTo(null);
     }
 
-    private void createMenuBar() {
+    private void createMenuBar(List<ServerInfo> servers, String defaultServerUrl) {
         JMenuBar menuBar = new JMenuBar();
 
-        // Меню Theme
         JMenu themeMenu = getThemeMenu();
         menuBar.add(themeMenu);
 
-        // Меню Source Server
-        JMenu serverMenu = getServerMenu();
+        JMenu serverMenu = new JMenu("Source Server");
+        ButtonGroup serverGroup = new ButtonGroup();
+
+        for (ServerInfo server : servers) {
+            JRadioButtonMenuItem item = new JRadioButtonMenuItem(server.name());
+            item.addActionListener(e -> {
+                if (item.isSelected() && serverPresenter != null) {
+                    serverPresenter.onServerSelected(server.name());
+                }
+            });
+            serverGroup.add(item);
+            serverMenu.add(item);
+            serverMenuItems.add(item);
+            if (server.url().equals(defaultServerUrl)) {
+                item.setSelected(true);
+            }
+        }
         menuBar.add(serverMenu);
 
         setJMenuBar(menuBar);
     }
 
-    private JMenu getServerMenu() {
-        JMenu serverMenu = new JMenu("Source Server");
-        ButtonGroup serverGroup = new ButtonGroup();
-        List<ServerInfo> servers = serverManager.getServers();
-        String currentUrl = serverManager.getCurrentServerUrl();
-
-        for (ServerInfo server : servers) {
-            JRadioButtonMenuItem item = new JRadioButtonMenuItem(server.name());
-            item.addActionListener(e -> {
-                if (item.isSelected()) {
-                    serverManager.switchToServer(server.name());
-                }
-            });
-            serverGroup.add(item);
-            serverMenu.add(item);
-            serverItems.add(item);
-            if (server.url().equals(currentUrl)) {
-                item.setSelected(true);
-            }
-        }
-        return serverMenu;
-    }
-
-    private static JMenu getThemeMenu() {
+    private JMenu getThemeMenu() {
         JMenu themeMenu = new JMenu("Theme");
         ButtonGroup themeGroup = new ButtonGroup();
         String[] themeNames = ThemeManager.getAvailableThemeNames();
@@ -125,6 +120,15 @@ public class MainFrame extends JFrame implements TaskView {
             }
         }
         return themeMenu;
+    }
+
+    public void ensureFilterPanel() {
+        if (filterPanel == null && filterPresenter != null) {
+            filterPanel = new FilterPanel(filterPresenter);
+            add(filterPanel, BorderLayout.NORTH);
+            revalidate();
+            repaint();
+        }
     }
 
     public void toggleLogs() {
@@ -155,10 +159,12 @@ public class MainFrame extends JFrame implements TaskView {
     }
 
     public void cancelLoading() {
-        filterController.cancelLoading();
+        if (filterPresenter != null) {
+            filterPresenter.cancelLoading();
+        }
     }
 
-    // === Реализация TaskView ===
+    // === TaskView implementation ===
     @Override
     public void setRunningState(boolean running) {
         statusBar.setProgressVisible(running);
@@ -214,9 +220,8 @@ public class MainFrame extends JFrame implements TaskView {
 
     @Override
     public void onServerSwitchFailed(String failedServerName, String currentServerName) {
-        // Возвращаем выделение в меню на текущий сервер
         SwingUtilities.invokeLater(() -> {
-            for (JRadioButtonMenuItem item : serverItems) {
+            for (JRadioButtonMenuItem item : serverMenuItems) {
                 if (item.getText().equals(currentServerName)) {
                     item.setSelected(true);
                     break;

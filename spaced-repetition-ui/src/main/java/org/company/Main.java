@@ -1,9 +1,9 @@
 package org.company;
 
-import org.company.config.AppConfig;
+import org.company.infrastructure.config.AppContext;
 
 public class Main {
     public static void main(String[] args) {
-        AppConfig.createAndShowMainFrame();
+        AppContext.createAndShowMainFrame();
     }
 }

@@ -10,7 +10,6 @@ public class LogPanel extends JScrollPane {
         super();
         logArea.setEditable(false);
         logArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
-        // Явно устанавливаем цвета из текущей темы
         logArea.setBackground(UIManager.getColor("TextArea.background"));
         logArea.setForeground(UIManager.getColor("TextArea.foreground"));
         setViewportView(logArea);
