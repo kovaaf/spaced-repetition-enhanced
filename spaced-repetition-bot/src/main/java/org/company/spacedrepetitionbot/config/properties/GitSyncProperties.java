@@ -1,4 +1,4 @@
-package org.company.spacedrepetitionbot.config;
+package org.company.spacedrepetitionbot.config.properties;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;

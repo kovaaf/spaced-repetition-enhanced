@@ -1,6 +1,6 @@
 package org.company.spacedrepetitionbot.service.default_deck;
 
-import org.company.spacedrepetitionbot.config.AppProperties;
+import org.company.spacedrepetitionbot.config.properties.AppProperties;
 import org.eclipse.jgit.api.CloneCommand;
 import org.eclipse.jgit.api.FetchCommand;
 import org.eclipse.jgit.api.Git;

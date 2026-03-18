@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.HmacAlgorithms;
 import org.apache.commons.codec.digest.HmacUtils;
-import org.company.spacedrepetitionbot.config.AppProperties;
+import org.company.spacedrepetitionbot.config.properties.AppProperties;
 import org.springframework.stereotype.Component;
 
 @Slf4j

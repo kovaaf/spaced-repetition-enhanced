@@ -10,7 +10,6 @@
     </parent>
 
     <artifactId>spaced-repetition-bot</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
     <name>spaced-repetition-bot</name>
     <description>spaced-repetition-bot</description>
 

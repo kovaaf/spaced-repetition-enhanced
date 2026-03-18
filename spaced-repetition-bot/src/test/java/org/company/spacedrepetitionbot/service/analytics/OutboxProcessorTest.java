@@ -1,7 +1,7 @@
 package org.company.spacedrepetitionbot.service.analytics;
 
 import org.company.spacedrepetitionbot.client.analytics.AnalyticsServiceClient;
-import org.company.spacedrepetitionbot.config.AppProperties;
+import org.company.spacedrepetitionbot.config.properties.AppProperties;
 import org.company.spacedrepetitionbot.constants.OutboxStatus;
 import org.company.spacedrepetitionbot.constants.Quality;
 import org.company.spacedrepetitionbot.model.analytics.AnalyticsDLQ;

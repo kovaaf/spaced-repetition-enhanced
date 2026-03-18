@@ -2,7 +2,7 @@ package org.company.spacedrepetitionbot.bot;
 
 import lombok.extern.slf4j.Slf4j;
 import org.company.spacedrepetitionbot.command.general.SpacedRepetitionCommand;
-import org.company.spacedrepetitionbot.config.BotConfigurationProperties;
+import org.company.spacedrepetitionbot.config.properties.BotConfigurationProperties;
 import org.company.spacedrepetitionbot.handler.UpdateDispatcher;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.extensions.bots.commandbot.CommandLongPollingTelegramBot;

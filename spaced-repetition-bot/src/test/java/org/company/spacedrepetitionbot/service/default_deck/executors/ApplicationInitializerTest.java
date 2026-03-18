@@ -1,7 +1,7 @@
 package org.company.spacedrepetitionbot.service.default_deck.executors;
 
-import org.company.spacedrepetitionbot.config.AppProperties;
-import org.company.spacedrepetitionbot.config.GitSyncProperties;
+import org.company.spacedrepetitionbot.config.properties.AppProperties;
+import org.company.spacedrepetitionbot.config.properties.GitSyncProperties;
 import org.company.spacedrepetitionbot.model.Deck;
 import org.company.spacedrepetitionbot.service.DeckService;
 import org.company.spacedrepetitionbot.service.default_deck.processors.SyncEventProcessor;

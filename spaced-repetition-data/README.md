@@ -8,7 +8,7 @@ The data service exposes gRPC endpoints for recording answer events and retrievi
 
 ## Architecture
 
-- **gRPC server**: Port 9090 (configurable via `DATA_SERVICE_PORT`)
+- **gRPC serverProperties**: Port 9090 (configurable via `DATA_SERVICE_PORT`)
 - **HTTP health endpoint**: Port 8081 (configurable via `SERVER_PORT`)
 - **Database**: PostgreSQL with schema `public`
 - **Connection pooling**: HikariCP with max 15 connections
@@ -21,7 +21,7 @@ The data service exposes gRPC endpoints for recording answer events and retrievi
 - `StreamAnalytics` - Server-side streaming of analytics events with periodic polling for new data
 
 ### Health Checks
-- gRPC health check: `grpc.health.v1.Health/Check`
+- gRPC health check: `grpcProperties.health.v1.Health/Check`
 - HTTP readiness probe: `GET http://localhost:8081/health/ready`
 - HTTP liveness probe: `GET http://localhost:8081/health/live`
 
@@ -66,7 +66,7 @@ Environment variables:
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `DATA_SERVICE_PORT` | gRPC server port | 50051 |
+| `DATA_SERVICE_PORT` | gRPC serverProperties port | 50051 |
 | `SERVER_PORT` | HTTP health endpoint port | 8081 |
 | `DATA_SERVICE_DB_HOST` | PostgreSQL host | localhost |
 | `DATA_SERVICE_DB_PORT` | PostgreSQL port | 5432 |

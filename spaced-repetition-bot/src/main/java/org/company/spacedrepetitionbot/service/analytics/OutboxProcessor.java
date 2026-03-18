@@ -3,7 +3,7 @@ package org.company.spacedrepetitionbot.service.analytics;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.company.spacedrepetitionbot.client.analytics.AnalyticsServiceClient;
-import org.company.spacedrepetitionbot.config.AppProperties;
+import org.company.spacedrepetitionbot.config.properties.AppProperties;
 import org.company.spacedrepetitionbot.constants.OutboxStatus;
 import org.company.spacedrepetitionbot.model.analytics.AnalyticsDLQ;
 import org.company.spacedrepetitionbot.model.analytics.AnalyticsOutbox;

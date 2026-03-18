@@ -1,7 +1,7 @@
 package org.company.spacedrepetitionbot.service.default_deck;
 
 import lombok.RequiredArgsConstructor;
-import org.company.spacedrepetitionbot.config.AppProperties;
+import org.company.spacedrepetitionbot.config.properties.AppProperties;
 import org.springframework.stereotype.Component;
 
 import java.nio.file.Path;

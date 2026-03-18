@@ -2,5 +2,6 @@ data:
   servers:
     - name: Local
       url: localhost:50051
+      default: true
     - name: Production
       url: 45.10.246.127:9090

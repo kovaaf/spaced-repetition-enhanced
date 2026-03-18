@@ -7,6 +7,8 @@ import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.company.config.logging.UILogAppender;
+import org.company.config.properties.*;
+import org.company.constants.ENV_CONSTANTS;
 import org.company.domain.ServerInfo;
 import org.company.domain.TimeFilter;
 import org.company.presentation.MainFrame;
@@ -38,8 +40,8 @@ public class AppContext {
         configureLookAndFeel();
 
         AppProperties props = loadConfiguration();
-        List<ServerInfo> servers = props.getServers();
-        String defaultUrl = props.getDefaultServerUrl();
+        List<ServerInfo> servers = props.data().getServersInfo();
+        String defaultUrl = determineDefaultUrl(props.data());;
 
         InfrastructureComponents infra = createDataSourceComponents(defaultUrl);
         UseCases useCases = createUseCases(infra, servers, defaultUrl);
@@ -60,6 +62,38 @@ public class AppContext {
         triggerInitialLoad(presenters.filterPresenter);
     }
 
+    private static String determineDefaultUrl(DataProperties data) {
+        // 1. Check environment variable
+        String envDefault = EnvUtility.getEnv(String.valueOf(ENV_CONSTANTS.DATA_DEFAULT_SERVER_URL), null);
+        if (envDefault != null) {
+            log.info("Using default server URL from environment variable: {}", envDefault);
+            return envDefault;
+        }
+
+        List<ServerProperties> serverProps = data.servers();
+        if (serverProps == null || serverProps.isEmpty()) {
+            throw new RuntimeException("No servers configured");
+        }
+
+        // 2. Look for server marked as default
+        List<ServerProperties> defaultServers = serverProps.stream()
+                .filter(ServerProperties::isDefault)
+                .toList();
+
+        if (defaultServers.size() > 1) {
+            throw new RuntimeException("Multiple servers marked as default in configuration. Only one can be default.");
+        }
+
+        if (defaultServers.size() == 1) {
+            log.info("Using default server marked in configuration: {}", defaultServers.get(0).url());
+            return defaultServers.get(0).url();
+        }
+
+        // 3. Fallback to first server
+        log.info("No default server specified, using first server: {}", serverProps.get(0).url());
+        return serverProps.get(0).url();
+    }
+
     private static void configureLookAndFeel() {
         try {
             UIManager.setLookAndFeel(new FlatDarkLaf());
@@ -74,7 +108,7 @@ public class AppContext {
     }
 
     private static AppProperties loadConfiguration() {
-        return new AppProperties();
+        return AppPropertiesFactory.create();
     }
 
     private static InfrastructureComponents createDataSourceComponents(String defaultUrl) {

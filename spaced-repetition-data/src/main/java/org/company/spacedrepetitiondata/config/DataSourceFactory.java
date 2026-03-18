@@ -3,43 +3,36 @@ package org.company.spacedrepetitiondata.config;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import lombok.extern.slf4j.Slf4j;
+import org.company.spacedrepetitiondata.config.properties.DatasourceProperties;
 
 import javax.sql.DataSource;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Factory for creating a HikariCP DataSource from {@link DatasourceProperties}.
+ */
 @Slf4j
-public final class DatabaseConfig {
-    private static volatile DataSource dataSource;
+public class DataSourceFactory {
+    private final DatasourceProperties datasourceProperties;
 
-    private DatabaseConfig() {}
-
-    public static DataSource getDataSource() {
-        if (dataSource == null) {
-            synchronized (DatabaseConfig.class) {
-                if (dataSource == null) {
-                    dataSource = createDataSource();
-                }
-            }
-        }
-        return dataSource;
+    public DataSourceFactory(DatasourceProperties datasourceProperties) {
+        this.datasourceProperties = datasourceProperties;
     }
 
-    private static HikariDataSource createDataSource() {
-        Config config = Config.getInstance();
-
+    public DataSource createDataSource() {
         HikariConfig hikariConfig = new HikariConfig();
 
         String jdbcUrl = String.format("jdbc:postgresql://%s:%d/%s?currentSchema=%s",
-                config.getDatabaseHost(),
-                config.getDatabasePort(),
-                config.getDatabaseName(),
-                config.getDatabaseSchema());
+                datasourceProperties.host(),
+                datasourceProperties.port(),
+                datasourceProperties.name(),
+                datasourceProperties.schema());
 
         hikariConfig.setJdbcUrl(jdbcUrl);
-        hikariConfig.setUsername(config.getDatabaseUser());
-        hikariConfig.setPassword(config.getDatabasePassword());
+        hikariConfig.setUsername(datasourceProperties.username());
+        hikariConfig.setPassword(datasourceProperties.password());
 
-        hikariConfig.setMaximumPoolSize(config.getDatabaseMaxPoolSize());
+        hikariConfig.setMaximumPoolSize(datasourceProperties.maxPoolSize());
         hikariConfig.setMinimumIdle(Math.min(2, hikariConfig.getMaximumPoolSize()));
         hikariConfig.setConnectionTimeout(TimeUnit.SECONDS.toMillis(30));
         hikariConfig.setIdleTimeout(TimeUnit.MINUTES.toMillis(10));
@@ -55,12 +48,5 @@ public final class DatabaseConfig {
                 jdbcUrl, hikariConfig.getMaximumPoolSize());
 
         return new HikariDataSource(hikariConfig);
-    }
-
-    public static void closeDataSource() {
-        if (dataSource instanceof HikariDataSource) {
-            ((HikariDataSource) dataSource).close();
-            log.info("HikariCP connection pool closed.");
-        }
     }
 }

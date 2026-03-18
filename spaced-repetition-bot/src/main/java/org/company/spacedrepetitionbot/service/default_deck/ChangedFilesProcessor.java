@@ -1,7 +1,7 @@
 package org.company.spacedrepetitionbot.service.default_deck;
 
 import lombok.RequiredArgsConstructor;
-import org.company.spacedrepetitionbot.config.AppProperties;
+import org.company.spacedrepetitionbot.config.properties.AppProperties;
 import org.company.spacedrepetitionbot.dto.WebhookPayload;
 import org.springframework.stereotype.Service;
 
