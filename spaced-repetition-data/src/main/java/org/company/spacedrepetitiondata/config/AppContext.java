@@ -118,9 +118,25 @@ public class AppContext {
         }
     }
 
-    public static void run() throws IOException, InterruptedException {
-        AppContext context = new AppContext();
-        context.start();
-        context.blockUntilShutdown();
+    /**
+     * Starts the service and blocks until shutdown.
+     * Handles all exceptions and exits the JVM with appropriate status.
+     */
+    public static void run() {
+        try {
+            AppContext context = new AppContext();
+            context.start();
+            context.blockUntilShutdown();
+        } catch (IOException e) {
+            log.error("Fatal error: failed to start server", e);
+            System.exit(1);
+        } catch (InterruptedException e) {
+            log.error("Server interrupted", e);
+            Thread.currentThread().interrupt();
+            System.exit(1);
+        } catch (RuntimeException e) {
+            log.error("Unexpected runtime error", e);
+            System.exit(1);
+        }
     }
 }
