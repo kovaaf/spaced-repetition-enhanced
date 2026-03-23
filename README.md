@@ -218,9 +218,5 @@ java -jar target/spaced-repetition-ui-0.0.1-SNAPSHOT.jar
 
 ## Additional Resources
 
-- [Analytics API Documentation](docs/analytics-api.md) - gRPC API reference
-- [Performance Testing Results](docs/performance-testing.md) - Performance metrics and optimization
 - [Spaced Repetition UI](spaced-repetition-ui/README.md) - Desktop application guide
 - [Spaced Repetition Data Service](spaced-repetition-data/README.md) - Analytics service documentation
-- [Troubleshooting Guide](docs/troubleshooting.md) - Common issues and solutions
-- [End-to-End Test Suite](docs/e2e-test-suite.md) - Integration testing documentation
