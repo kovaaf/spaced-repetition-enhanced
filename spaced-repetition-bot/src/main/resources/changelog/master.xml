@@ -16,4 +16,8 @@
              relativeToChangelogFile="true"/>
     <include file="changelogs/2026.02.22--create-analytics-outbox-sequence.xml"
              relativeToChangelogFile="true"/>
+    <include file="changelogs/2026.03.19--add-name-columns-to-analytics-outbox.xml"
+             relativeToChangelogFile="true"/>
+    <include file="changelogs/2026.03.19--add-deleted-at-to-card.xml"
+             relativeToChangelogFile="true"/>
 </databaseChangeLog>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.32.xsd">
+
+    <changeSet id="system--2026.03.19--addDeletedAtToCard" author="system">
+        <addColumn tableName="card">
+            <column name="deleted_at" type="TIMESTAMP">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+
+        <sql>
+            COMMENT ON COLUMN card.deleted_at IS 'Timestamp when card was soft-deleted (NULL means active)';
+        </sql>
+    </changeSet>
+
+    <changeSet id="system--2026.03.19--add-index-deleted-at" author="system">
+        <createIndex tableName="card" indexName="idx_card_deleted_at">
+            <column name="deleted_at"/>
+        </createIndex>
+    </changeSet>
+</databaseChangeLog>

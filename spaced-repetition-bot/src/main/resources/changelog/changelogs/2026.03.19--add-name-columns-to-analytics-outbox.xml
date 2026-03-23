@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.32.xsd">
+
+    <changeSet id="system--2026.03.19--addNameColumnsToAnalyticsOutbox" author="system">
+        <addColumn tableName="analytics_outbox">
+            <column name="user_name" type="VARCHAR(255)">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+
+        <addColumn tableName="analytics_outbox">
+            <column name="deck_name" type="VARCHAR(255)">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+
+        <addColumn tableName="analytics_outbox">
+            <column name="card_title" type="VARCHAR(512)">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+
+        <sql>
+            COMMENT ON COLUMN analytics_outbox.user_name IS 'User display name at the time of event';
+            COMMENT ON COLUMN analytics_outbox.deck_name IS 'Deck display name at the time of event';
+            COMMENT ON COLUMN analytics_outbox.card_title IS 'Card title at the time of event';
+        </sql>
+    </changeSet>
+</databaseChangeLog>

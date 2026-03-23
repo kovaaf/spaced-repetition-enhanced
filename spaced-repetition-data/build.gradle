@@ -95,7 +95,7 @@ sourceSets {
 }
 
 application {
-    mainClass = 'org.company.spacedrepetitiondata.DataServiceApplication'
+    mainClass = 'org.company.data.DataServiceRunner'
 }
 
 test {
@@ -137,7 +137,7 @@ jacocoTestCoverageVerification {
                 '**/exception/**',
                 '**/health/**',
                 '**/grpc/**',
-                '**/*DataServiceApplication*'
+                '**/*DataServiceRunner*'
             ])
         })
     )

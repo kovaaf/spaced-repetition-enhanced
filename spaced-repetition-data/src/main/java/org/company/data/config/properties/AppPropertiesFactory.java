@@ -3,6 +3,7 @@ package org.company.data.config.properties;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.company.data.config.properties.utility.EnvUtility;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.InputStream;
@@ -114,11 +115,11 @@ public final class AppPropertiesFactory {
         }
 
         // Override with environment variables
-        host = EnvUtility.getEnv("DATA_SERVICE_DB_HOST", host);
-        port = EnvUtility.getEnvInt("DATA_SERVICE_DB_PORT", port);
-        name = EnvUtility.getEnv("DATA_SERVICE_DB_NAME", name);
-        username = EnvUtility.getEnv("DATA_SERVICE_DB_USER", username);
-        password = EnvUtility.getEnv("DATA_SERVICE_DB_PASSWORD", password);
+        host = EnvUtility.getEnv("POSTGRES_DB_HOST", host);
+        port = EnvUtility.getEnvInt("POSTGRES_DB_PORT", port);
+        name = EnvUtility.getEnv("POSTGRES_DB_NAME", name);
+        username = EnvUtility.getEnv("POSTGRES_DB_USER", username);
+        password = EnvUtility.getEnv("POSTGRES_DB_PASSWORD", password);
         schema = EnvUtility.getEnv("DATA_SERVICE_DB_SCHEMA", schema);
         maxPoolSize = EnvUtility.getEnvInt("DATA_SERVICE_DB_MAX_POOL_SIZE", maxPoolSize);
 

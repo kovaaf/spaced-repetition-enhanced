@@ -1,5 +1,6 @@
 package org.company.ui.infrastructure.ui.swing.components;
 
+import lombok.extern.slf4j.Slf4j;
 import org.company.ui.domain.entity.AnswerEvent;
 
 import javax.swing.*;
@@ -15,6 +16,7 @@ import java.util.List;
  * Custom JTable that displays answer events.
  * Provides column rendering, sorting (via header click) and a specialized quality renderer.
  */
+@Slf4j
 public class DataTable extends JTable {
     private final AnswerTableModel model;
     private final TableSortHandler sortHandler;
@@ -133,6 +135,7 @@ public class DataTable extends JTable {
         @Override
         public Object getValueAt(int rowIndex, int columnIndex) {
             AnswerEvent e = data.get(rowIndex);
+            log.debug("Answer Event: {}", e.toString());
             return switch (columnIndex) {
                 case 0 -> e.userName() != null ? e.userName() : e.userId();
                 case 1 -> e.deckName() != null ? e.deckName() : e.deckId();

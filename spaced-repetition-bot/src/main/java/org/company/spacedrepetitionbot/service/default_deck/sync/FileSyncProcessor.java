@@ -21,13 +21,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-/**
- * Processes multiple files during synchronisation.
- * <p>
- * This class orchestrates the handling of either a list of changed files (incremental sync)
- * or all Markdown files in the source folders (full sync).
- * </p>
- */
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -41,12 +34,6 @@ public class FileSyncProcessor {
     private final FileSyncExecutor fileSyncExecutor;
     private final FileConsistencyValidator fileConsistencyValidator;
 
-    /**
-     * Processes a list of changed files (incremental sync).
-     *
-     * @param deck         the deck being synced
-     * @param changedPaths relative paths of files that have changed
-     */
     public void processChangedFiles(Deck deck, List<String> changedPaths) {
         Path repoPath = pathService.getRepoAbsolutePath();
         Set<String> processedFiles = new HashSet<>();
@@ -67,11 +54,6 @@ public class FileSyncProcessor {
         return appProperties.getDefaultDeck().getRepo().getSourceFolders();
     }
 
-    /**
-     * Processes all Markdown files in the configured source folders (full sync).
-     *
-     * @param deck the deck being synced
-     */
     public void processAllMarkdownFiles(Deck deck) {
         Set<String> processedFilePaths = new HashSet<>();
         List<String> filesWithNoCards = new ArrayList<>();
@@ -82,7 +64,11 @@ public class FileSyncProcessor {
             log.error("No cards were created for the following files: {}", String.join(", ", filesWithNoCards));
         }
 
-        deleteCardsNotInSourceFolders(deck, processedFilePaths);
+        // Мягкое удаление карточек из файлов, которые не были обработаны (удалены из репозитория)
+        int deletedCount = cardService.softDeleteByDeckAndSourceFilePathNotIn(deck, processedFilePaths);
+        if (deletedCount > 0) {
+            log.debug("Soft-deleted {} obsolete cards", deletedCount);
+        }
     }
 
     private List<Card> processMarkdownFile(Deck deck, Path file) {
@@ -96,17 +82,25 @@ public class FileSyncProcessor {
     }
 
     private void updateOrCreateCard(Deck deck, Card card, String relativePath) {
-        cardService.getBySourceFilePathAndSourceHeading(relativePath, card.getSourceHeading()).ifPresentOrElse(
-                existing -> {
-                    if (!existing.getFront().equals(card.getFront()) || !existing.getBack().equals(card.getBack())) {
-                        updateCard(existing, card);
-                    }
-                }, () -> createCard(card, deck));
+        cardService.getBySourceFilePathAndSourceHeading(relativePath, card.getSourceHeading())
+                .ifPresentOrElse(
+                        existing -> {
+                            // Если карточка была удалена (soft-delete), восстанавливаем её
+                            if (existing.getDeletedAt() != null) {
+                                cardService.restoreIfDeleted(deck, relativePath, card.getSourceHeading());
+                            }
+                            // Обновляем данные, если они изменились
+                            if (!existing.getFront().equals(card.getFront()) || !existing.getBack().equals(card.getBack())) {
+                                updateCard(existing, card);
+                            }
+                        },
+                        () -> createCard(card, deck));
     }
 
     private void deleteObsoleteCards(Deck deck, String relativePath, List<Card> cards) {
         List<String> validFronts = cards.stream().map(Card::getFront).collect(Collectors.toList());
-        cardService.deleteByDeckAndSourceFilePathAndFrontNotIn(deck, relativePath, validFronts);
+        // Мягкое удаление карточек из этого файла, которые не входят в актуальный список
+        cardService.softDeleteByDeckAndSourceFilePathAndFrontNotIn(deck, relativePath, validFronts);
     }
 
     private void updateCard(Card existing, Card newData) {
@@ -167,13 +161,6 @@ public class FileSyncProcessor {
             });
         } catch (IOException e) {
             log.error("Failed to process folder: {}", rootPath, e);
-        }
-    }
-
-    private void deleteCardsNotInSourceFolders(Deck deck, Set<String> processedFilePaths) {
-        int deletedCount = cardService.deleteByDeckAndSourceFilePathNotIn(deck, processedFilePaths);
-        if (deletedCount > 0) {
-            log.debug("Deleted {} obsolete cards", deletedCount);
         }
     }
 }

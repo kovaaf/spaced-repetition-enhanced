@@ -16,13 +16,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-/**
- * Synchronises user‑specific decks with the default deck.
- * <p>
- * When the default deck changes, this component propagates additions, updates,
- * and deletions to all user decks that are based on it.
- * </p>
- */
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -30,11 +23,6 @@ public class UserDeckSynchronizer {
     private final DeckService deckService;
     private final CardService cardService;
 
-    /**
-     * Synchronizes all user decks with the given default deck.
-     *
-     * @param defaultDeck the default deck that has been updated
-     */
     @Transactional
     public void syncUserDecks(Deck defaultDeck) {
         List<Deck> userDecks = deckService.findByDefaultDeckSuffix();
@@ -63,18 +51,20 @@ public class UserDeckSynchronizer {
             }
         });
 
-        // Удаление отсутствующих карточек
+        // Мягкое удаление карточек, отсутствующих в дефолтной колоде
         Set<Long> currentIds = defaultCardsMap.keySet();
         userDeck.getCards()
                 .stream()
                 .filter(card -> card.getOriginalCardId() != null)
                 .filter(card -> !currentIds.contains(card.getOriginalCardId()))
-                .forEach(cardService::deleteCard);
+                .forEach(card -> {
+                    card.setDeletedAt(LocalDateTime.now());
+                    cardService.save(card);
+                });
     }
 
     private void updateCardIfChanged(Card userCard, Card defaultCard) {
         if (!userCard.getFront().equals(defaultCard.getFront()) || !userCard.getBack().equals(defaultCard.getBack())) {
-
             userCard.setFront(defaultCard.getFront());
             userCard.setBack(defaultCard.getBack());
             resetCardProgress(userCard);

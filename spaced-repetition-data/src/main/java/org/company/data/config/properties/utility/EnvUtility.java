@@ -1,4 +1,4 @@
-package org.company.data.config.properties;
+package org.company.data.config.properties.utility;
 
 import lombok.extern.slf4j.Slf4j;
 

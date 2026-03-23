@@ -64,9 +64,9 @@ GIT_WEBHOOK_SECRET='your_webhook_secret'
 GIT_SSH_PASSPHRASE='your_ssh_passphrase'
 
 # Database Configuration (optional - defaults shown)
-TELEGRAM_BOT_DB_USER=postgres
-TELEGRAM_BOT_DB_PASSWORD=postgres
-TELEGRAM_BOT_DB_HOST=localhost
+POSTGRES_DB_USER=postgres
+DB_PASSWORD=postgres
+POSTGRES_DB_HOST=localhost
 
 # Encryption: Used for sensitive data encryption in SecurityConfig
 ENCRYPTION_PASSWORD='encryption_password'

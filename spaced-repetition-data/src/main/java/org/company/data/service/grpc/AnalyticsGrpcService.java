@@ -46,6 +46,9 @@ public class AnalyticsGrpcService extends AnalyticsServiceGrpc.AnalyticsServiceI
                     .timestamp(Instant.ofEpochSecond(
                             request.getTimestamp().getSeconds(),
                             request.getTimestamp().getNanos()))
+                    .userName(request.hasUserName() ? request.getUserName() : null)
+                    .deckName(request.hasDeckName() ? request.getDeckName() : null)
+                    .cardTitle(request.hasCardTitle() ? request.getCardTitle() : null)
                     .build();
 
             recordAnswerUseCase.execute(event);

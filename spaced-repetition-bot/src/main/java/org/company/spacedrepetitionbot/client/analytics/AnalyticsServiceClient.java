@@ -10,9 +10,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 
-/**
- * Client for interacting with the Analytics gRPC service.
- */
 @Slf4j
 @Service
 public class AnalyticsServiceClient {
@@ -27,16 +24,20 @@ public class AnalyticsServiceClient {
     /**
      * Records an answer event in the analytics service.
      *
-     * @param userId   the user ID
-     * @param deckId   the deck ID
-     * @param cardId   the card ID
-     * @param quality  the answer quality
+     * @param userId    the user ID
+     * @param deckId    the deck ID
+     * @param cardId    the card ID
+     * @param quality   the answer quality
      * @param timestamp the timestamp of the answer
-     * @throws RuntimeException if the gRPC call fails
+     * @param userName  display name of the user (may be null)
+     * @param deckName  display name of the deck (may be null)
+     * @param cardTitle title of the card (may be null)
      */
     public void recordAnswerEvent(String userId, String deckId, String cardId,
-                                  Quality quality, Instant timestamp) {
-        AnalyticsProto.AnswerEvent event = buildAnswerEvent(userId, deckId, cardId, quality, timestamp);
+            Quality quality, Instant timestamp,
+            String userName, String deckName, String cardTitle) {
+        AnalyticsProto.AnswerEvent event = buildAnswerEvent(userId, deckId, cardId, quality, timestamp,
+                userName, deckName, cardTitle);
         try {
             analyticsStub.recordAnswerEvent(event);
             log.debug("Successfully recorded answer event for user {}, card {}", userId, cardId);
@@ -47,7 +48,8 @@ public class AnalyticsServiceClient {
     }
 
     private AnalyticsProto.AnswerEvent buildAnswerEvent(String userId, String deckId, String cardId,
-                                                        Quality quality, Instant timestamp) {
+            Quality quality, Instant timestamp,
+            String userName, String deckName, String cardTitle) {
         AnalyticsProto.AnswerEvent.Builder builder = AnalyticsProto.AnswerEvent.newBuilder()
                 .setUserId(userId)
                 .setDeckId(deckId)
@@ -58,6 +60,15 @@ public class AnalyticsServiceClient {
                     .setSeconds(timestamp.getEpochSecond())
                     .setNanos(timestamp.getNano())
                     .build());
+        }
+        if (userName != null && !userName.isEmpty()) {
+            builder.setUserName(userName);
+        }
+        if (deckName != null && !deckName.isEmpty()) {
+            builder.setDeckName(deckName);
+        }
+        if (cardTitle != null && !cardTitle.isEmpty()) {
+            builder.setCardTitle(cardTitle);
         }
         return builder.build();
     }

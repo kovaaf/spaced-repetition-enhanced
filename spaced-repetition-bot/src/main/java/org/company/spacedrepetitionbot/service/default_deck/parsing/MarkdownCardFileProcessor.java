@@ -15,13 +15,6 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * Implementation of {@link CardFileProcessor} that processes Markdown files.
- * <p>
- * Parses a Markdown file into cards using {@link MarkdownParser} and updates the database accordingly:
- * creates new cards, updates existing ones, and deletes obsolete cards for the given source file.
- * </p>
- */
 @Component
 @RequiredArgsConstructor
 public class MarkdownCardFileProcessor implements CardFileProcessor {
@@ -50,20 +43,19 @@ public class MarkdownCardFileProcessor implements CardFileProcessor {
         deleteObsoleteCards(deck, relativePath, cards);
     }
 
-    /**
-     * Updates an existing card or creates a new one if it does not exist.
-     *
-     * @param deck         the deck
-     * @param card         the card data from the file
-     * @param relativePath the relative path of the source file
-     */
     private void updateOrCreateCard(Deck deck, Card card, String relativePath) {
-        cardService.getBySourceFilePathAndSourceHeading(relativePath, card.getSourceHeading()).ifPresentOrElse(
-                existing -> {
-                    if (!existing.getFront().equals(card.getFront()) || !existing.getBack().equals(card.getBack())) {
-                        updateCard(existing, card);
-                    }
-                }, () -> createCard(card, deck));
+        cardService.getBySourceFilePathAndSourceHeading(relativePath, card.getSourceHeading())
+                .ifPresentOrElse(
+                        existing -> {
+                            // Восстанавливаем, если удалена
+                            if (existing.getDeletedAt() != null) {
+                                cardService.restoreIfDeleted(deck, relativePath, card.getSourceHeading());
+                            }
+                            if (!existing.getFront().equals(card.getFront()) || !existing.getBack().equals(card.getBack())) {
+                                updateCard(existing, card);
+                            }
+                        },
+                        () -> createCard(card, deck));
     }
 
     private void updateCard(Card existing, Card newData) {
@@ -72,12 +64,6 @@ public class MarkdownCardFileProcessor implements CardFileProcessor {
         cardService.save(existing);
     }
 
-    /**
-     * Creates a new card and associates it with the deck.
-     *
-     * @param card the card to create
-     * @param deck the deck
-     */
     private void createCard(Card card, Deck deck) {
         if (deck.getDeckId() == null) {
             deck = deckService.save(deck);
@@ -91,15 +77,9 @@ public class MarkdownCardFileProcessor implements CardFileProcessor {
         cardService.save(card);
     }
 
-    /**
-     * Deletes cards from the database that are no longer present in the file.
-     *
-     * @param deck         the deck
-     * @param relativePath the source file path
-     * @param cards        the current list of cards from the file
-     */
     private void deleteObsoleteCards(Deck deck, String relativePath, List<Card> cards) {
         List<String> validFronts = cards.stream().map(Card::getFront).collect(Collectors.toList());
-        cardService.deleteByDeckAndSourceFilePathAndFrontNotIn(deck, relativePath, validFronts);
+        // Мягкое удаление карточек из этого файла, которых нет в актуальном списке
+        cardService.softDeleteByDeckAndSourceFilePathAndFrontNotIn(deck, relativePath, validFronts);
     }
 }

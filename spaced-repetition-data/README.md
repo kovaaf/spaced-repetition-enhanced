@@ -68,11 +68,11 @@ Environment variables:
 |----------|-------------|---------|
 | `DATA_SERVICE_PORT` | gRPC serverProperties port | 50051 |
 | `SERVER_PORT` | HTTP health endpoint port | 8081 |
-| `DATA_SERVICE_DB_HOST` | PostgreSQL host | localhost |
-| `DATA_SERVICE_DB_PORT` | PostgreSQL port | 5432 |
-| `DATA_SERVICE_DB_NAME` | Database name | spaced-repetition-bot-db |
-| `DATA_SERVICE_DB_USER` | Database user | postgres |
-| `DATA_SERVICE_DB_PASSWORD` | Database password | postgres |
+| `POSTGRES_DB_HOST` | PostgreSQL host | localhost |
+| `POSTGRES_DB_PORT` | PostgreSQL port | 5432 |
+| `POSTGRES_DB_NAME` | Database name | spaced-repetition-bot-db |
+| `POSTGRES_DB_USER` | Database user | postgres |
+| `POSTGRES_DB_PASSWORD` | Database password | postgres |
 | `DATA_SERVICE_DB_MAX_POOL_SIZE` | Connection pool size | 15 |
 | `DATA_SERVICE_DB_SCHEMA` | Database schema | public |
 

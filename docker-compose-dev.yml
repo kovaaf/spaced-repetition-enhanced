@@ -7,14 +7,14 @@ services:
       - '5432:5432'
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d spaced-repetition-bot-db"]
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d spaced-repetition-bot-db" ]
       interval: 30s
       timeout: 10s
       retries: 5
     environment:
-      POSTGRES_DB: ${DB_NAME}
-      POSTGRES_USER: ${DB_USER:-postgres}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      POSTGRES_DB_NAME: ${POSTGRES_DB_NAME:-spaced-repetition-bot-db}
+      POSTGRES_USER: ${POSTGRES_DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_DB_PASSWORD:-postgres}
     logging:
       driver: "json-file"
       options:
@@ -23,40 +23,35 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
-  spaced-repetition-data-service:
+  spaced-repetition-data:
     build:
       context: .
       dockerfile: spaced-repetition-data/Dockerfile
-    container_name: spaced-repetition-data-service
+    container_name: spaced-repetition-data
     depends_on:
       spaced-repetition-bot-db:
         condition: service_healthy
     restart: unless-stopped
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:8081/health/ready" ]
-      interval: 15s
-      timeout: 5s
-      retries: 3
+      interval: 30s
+      timeout: 10s
+      retries: 5
       start_period: 30s
     ports:
       - "50051:50051" # gRPC endpoint
       - "8081:8081"  # HTTP health endpoint
     environment:
       _JAVA_OPTIONS: >-
-        -XX:+UseG1GC
-        -XX:MaxGCPauseMillis=200
         -XX:+HeapDumpOnOutOfMemoryError
         -XX:HeapDumpPath=/tmp/heapdump-%p-%t.hprof
+        -XX:+ExitOnOutOfMemoryError
         -Xlog:gc*:file=/tmp/gc-detail.log:time,uptime,level,tags:filecount=5,filesize=20m
-      DATA_SERVICE_PORT: ${DATA_SERVICE_PORT:-50051}
-      DATA_SERVICE_DB_HOST: spaced-repetition-bot-db
-      DATA_SERVICE_DB_PORT: ${DB_PORT:-5432}
-      DATA_SERVICE_DB_NAME: ${DB_NAME}
-      DATA_SERVICE_DB_USER: ${DB_USER:-postgres}
-      DATA_SERVICE_DB_PASSWORD: ${DB_PASSWORD:-postgres}
-      DATA_SERVICE_DB_MAX_POOL_SIZE: 10
-      DATA_SERVICE_DB_SCHEMA: public
-      SPRING_APPLICATION_NAME: spaced-repetition-data
+      POSTGRES_DB_HOST: spaced-repetition-bot-db
+      POSTGRES_DB_PORT: ${POSTGRES_DB_PORT:-5432}
+      POSTGRES_DB_NAME: ${POSTGRES_DB_NAME:-spaced-repetition-bot-db}
+      POSTGRES_DB_USER: ${POSTGRES_DB_USER:-postgres}
+      POSTGRES_DB_PASSWORD: ${POSTGRES_DB_PASSWORD:-postgres}
       HEALTH_SERVER_PORT: 8081
       LOGGING_LEVEL_ROOT: INFO
     logging:
@@ -73,7 +68,7 @@ services:
     depends_on:
       spaced-repetition-bot-db:
         condition: service_healthy
-      spaced-repetition-data-service:
+      spaced-repetition-data:
         condition: service_healthy
     ports:
       - "8080:8080"
@@ -82,34 +77,31 @@ services:
       test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
       interval: 30s
       timeout: 10s
-      retries: 3
+      retries: 5
       start_period: 120s
     environment:
       _JAVA_OPTIONS: >-
-        -XX:+UseG1GC
-        -XX:MaxGCPauseMillis=200
         -XX:+HeapDumpOnOutOfMemoryError
         -XX:HeapDumpPath=/tmp/heapdump-%p-%t.hprof
         -Xlog:gc*:file=/tmp/gc-detail.log:time,uptime,level,tags:filecount=5,filesize=20m
         -Dlogging.level.org.springframework.context.support.PostProcessorRegistrationDelegate=ERROR
-      TELEGRAM_BOT_DB_HOST: ${DB_NAME}
-      TELEGRAM_BOT_DB_PORT: ${DB_PORT:-5432}
-      TELEGRAM_BOT_DB_USER: ${DB_USER:-postgres}
-      TELEGRAM_BOT_DB_PASSWORD: ${DB_PASSWORD:-postgres}
+      POSTGRES_DB_HOST: spaced-repetition-bot-db
+      POSTGRES_DB_PORT: ${POSTGRES_DB_PORT:-5432}
+      POSTGRES_DB_USER: ${POSTGRES_DB_USER:-postgres}
+      POSTGRES_DB_PASSWORD: ${POSTGRES_DB_PASSWORD:-postgres}
       TELEGRAM_BOT_PORT: ${TELEGRAM_BOT_PORT:-8080}
       TELEGRAM_BOT_NAME: ${TELEGRAM_BOT_NAME:-SpacedRepetitionBot}
-      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-dummy}
       DEFAULT_DECK_REPO_URL: ${DEFAULT_DECK_REPO_URL}
-      GIT_SSH_PASSPHRASE: ${GIT_SSH_PASSPHRASE}
-      GIT_WEBHOOK_SECRET: ${GIT_WEBHOOK_SECRET}
-      GIT_TOKEN: ${GIT_TOKEN}
+      GIT_SSH_PASSPHRASE: ${GIT_SSH_PASSPHRASE:-dummy}
+      GIT_WEBHOOK_SECRET: ${GIT_WEBHOOK_SECRET:-dummy}
+      GIT_TOKEN: ${GIT_TOKEN:-dummy}
       GIT_SYNC_ENABLED: ${GIT_SYNC_ENABLED:-true}
-      ENCRYPTION_PASSWORD: ${ENCRYPTION_PASSWORD}
-      ENCRYPTION_SALT: ${ENCRYPTION_SALT}
-      DATA_SERVICE_URL: static://host.docker.internal:50051
+      ENCRYPTION_PASSWORD: ${ENCRYPTION_PASSWORD:-dummy}
+      ENCRYPTION_SALT: ${ENCRYPTION_SALT:-dummy}
+      DATA_SERVICE_URL: static://spaced-repetition-data:50051
       ANALYTICS_OUTBOX_PROCESSOR_BATCH_SIZE: ${ANALYTICS_OUTBOX_PROCESSOR_BATCH_SIZE:-200}
       ANALYTICS_OUTBOX_PROCESSOR_CRON: ${ANALYTICS_OUTBOX_PROCESSOR_CRON:-*/30 * * * * *}
-      DATA_SERVICE_PORT: ${DATA_SERVICE_PORT:-50051}
     logging:
       driver: "json-file"
       options:

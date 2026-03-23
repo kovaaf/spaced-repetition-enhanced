@@ -50,13 +50,16 @@ public class OutboxProcessor {
         analyticsOutboxRepository.save(record);
 
         try {
-            // Call analytics service
+            // Call analytics service with all data including names
             analyticsServiceClient.recordAnswerEvent(
                     record.getUserId().toString(),
                     record.getDeckId().toString(),
                     record.getCardId().toString(),
                     record.getQualityEnum(),
-                    record.getEventTimestamp().atZone(java.time.ZoneId.systemDefault()).toInstant()
+                    record.getEventTimestamp().atZone(java.time.ZoneId.systemDefault()).toInstant(),
+                    record.getUserName(),
+                    record.getDeckName(),
+                    record.getCardTitle()
             );
             // Success
             record.setStatus(OutboxStatus.COMPLETED);
@@ -96,7 +99,7 @@ public class OutboxProcessor {
             record.setStatus(OutboxStatus.FAILED);
             record.setErrorMessage(e.getMessage());
             outboxMetrics.incrementRetry();
-            log.warn("Outbox record {} failed, will retry in {} ms (retry {}/{}) with jitter factor {:.2f}",
+            log.warn("Outbox record {} failed, will retry in {} ms (retry {}/{}) with jitter factor {}",
                     record.getEventId(), delay, retryCount + 1, maxRetries, jitterFactor);
         }
     }

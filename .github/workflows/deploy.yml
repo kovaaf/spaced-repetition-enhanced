@@ -81,8 +81,8 @@ jobs:
       - name: Create .env file
         run: |
           cat << EOF > .env
-          TELEGRAM_BOT_DB_USER=${{ secrets.TELEGRAM_BOT_DB_USER }}
-          TELEGRAM_BOT_DB_PASSWORD=${{ secrets.TELEGRAM_BOT_DB_PASSWORD }}
+          POSTGRES_DB_USER=${{ secrets.POSTGRES_DB_USER }}
+          DB_PASSWORD=${{ secrets.POSTGRES_DB_PASSWORD }}
           TELEGRAM_BOT_PORT=${{ secrets.TELEGRAM_BOT_PORT }}
           TELEGRAM_BOT_NAME=SpacedRepetitionBot
           TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}

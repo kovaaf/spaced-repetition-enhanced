@@ -12,13 +12,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Set;
 
-/**
- * Executor that processes a single file during synchronization.
- * <p>
- * If the file exists, it delegates to {@link MarkdownCardFileProcessor} to update cards.
- * If the file does not exist, all cards belonging to that source file are deleted.
- * </p>
- */
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -27,13 +20,6 @@ public class FileSyncExecutor {
     private final CardService cardService;
     private final PathService pathService;
 
-    /**
-     * Processes a single file: updates or deletes cards accordingly.
-     *
-     * @param deck           the deck to which the file belongs
-     * @param filePath       the absolute path of the file
-     * @param processedFiles a set to which the relative path of the file will be added (for tracking)
-     */
     public void processFile(Deck deck, Path filePath, Set<String> processedFiles) {
         String relativePath = pathService.absolutePathToRelativePathString(filePath);
 
@@ -41,7 +27,8 @@ public class FileSyncExecutor {
             fileProcessor.processFile(deck, filePath);
         } else {
             log.warn("File not found: {}", filePath);
-            cardService.deleteByDeckAndSourceFilePath(deck, relativePath);
+            // Мягкое удаление всех карточек этого файла
+            cardService.softDeleteByDeckAndSourceFilePath(deck, relativePath);
         }
         processedFiles.add(relativePath);
     }
