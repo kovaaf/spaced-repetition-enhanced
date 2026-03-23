@@ -20,11 +20,6 @@ The system automatically generates learning cards from Git repositories, provide
 docker-compose -f docker-compose-dev.yml up -d
 ```
 
-### Production (uses non-dev configuration with pre-built images from Docker Hub)
-```bash
-docker-compose up -d
-```
-
 **Key difference**: 
 - `docker-compose-dev.yml` builds from the local `Dockerfile` (includes tests, development settings)
 - `docker-compose.yml` uses pre-built image (used in GitHub workflow for production)
@@ -65,7 +60,7 @@ GIT_SSH_PASSPHRASE='your_ssh_passphrase'
 
 # Database Configuration (optional - defaults shown)
 POSTGRES_DB_USER=postgres
-DB_PASSWORD=postgres
+POSTGRES_DB_PASSWORD=postgres
 POSTGRES_DB_HOST=localhost
 
 # Encryption: Used for sensitive data encryption in SecurityConfig
@@ -147,19 +142,6 @@ DATA_SERVICE_DB_MAX_POOL_SIZE=15
 DATA_SERVICE_HOST=localhost
 ```
 
-### Transactional Outbox Pattern
-The analytics pipeline uses a transactional outbox pattern for reliable event delivery:
-
-1. **Event capture**: Answer events stored in `analytics_outbox` table within bot transaction
-2. **Background processing**: `OutboxProcessor` runs every second, processes up to 200 events per batch
-3. **Reliable delivery**: Events retried with exponential backoff (1s, 2s, 4s) on failures
-4. **Dead letter queue**: Failed events moved to `analytics_dlq` after 5 retries
-
-**Configuration**:
-- Batch size: `ANALYTICS_OUTBOX_PROCESSOR_BATCH_SIZE` (default: 200)
-- Processing frequency: `ANALYTICS_OUTBOX_PROCESSOR_CRON` (default: every second)
-- Max retries: 5 with exponential backoff
-
 ### Quick Start with Analytics
 
 #### Option 1: Complete Docker Deployment
@@ -182,7 +164,7 @@ java -jar target/spaced-repetition-ui-0.0.1-SNAPSHOT.jar
 docker-compose -f docker-compose-dev.yml up -d
 
 # Configure UI for development (port 50051)
-# Edit spaced-repetition-ui/src/main/resources/application.properties:
+# Edit spaced-repetition-ui/src/main/resources/application.yml:
 # data.service.url=localhost:50051
 
 # Build and run UI
@@ -191,14 +173,13 @@ mvn clean package -DskipTests
 java -jar target/spaced-repetition-ui-0.0.1-SNAPSHOT.jar
 ```
 
-**Note**: For development, you must edit `application.properties` to use `localhost:50051` before building the JAR.
+**Note**: For development, you must edit `application.yml` to use `localhost:50051` before building the JAR.
 
 #### Option 3: UI Only (Existing Data Service)
 If data service is already running:
 
-1. **Configure the correct port** in `application.properties`:
-   - Edit `spaced-repetition-ui/src/main/resources/application.properties`
-   - Set `data.service.url=localhost:50051` for production (port 50051)
+1. **Configure the correct port** in `application.yml`:
+   - Edit `spaced-repetition-ui/src/main/resources/application.yml`
    - Set `data.service.url=localhost:50051` for development (port 50051)
 
 2. Build and run UI:
@@ -208,10 +189,10 @@ mvn clean package -DskipTests
 java -jar target/spaced-repetition-ui-0.0.1-SNAPSHOT.jar
 ```
 
-**Important**: System property overrides (`-Ddata.service.url`) are **NOT** supported. You must edit `application.properties` directly.
+**Important**: System property overrides (`-Ddata.service.url`) are **NOT** supported. You must edit `application.yml` directly.
 
 **Default Port Mappings**:
-- Data Service gRPC: 50051 (production), 50051 (development)
+- Data Service gRPC: 50051
 - Data Service HTTP Health: 8081
 - Bot Service: 8080
 - PostgreSQL Database: 5432
