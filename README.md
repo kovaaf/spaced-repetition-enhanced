@@ -32,7 +32,7 @@ docker-compose up -d
 **Default port mappings** (when using Docker):
 - PostgreSQL database: `localhost:5432` → `5432` (container)
 - Bot service: `localhost:8080` → `8080` (container)
-- Data service (gRPC): `localhost:9090` → `9090` (container)
+- Data service (gRPC): `localhost:50051` → `50051` (container)
 - Data service (HTTP health): `localhost:8081` → `8081` (container)
 
 ## Telegram Bot Setup
@@ -73,7 +73,7 @@ ENCRYPTION_PASSWORD='encryption_password'
 ENCRYPTION_SALT='encryption_salt'
 
 # Analytics Data Service Configuration (optional - defaults shown)
-DATA_SERVICE_URL='static://spaced-repetition-data:9090'
+DATA_SERVICE_URL='static://spaced-repetition-data:50051'
 ANALYTICS_OUTBOX_PROCESSOR_BATCH_SIZE=200
 ANALYTICS_OUTBOX_PROCESSOR_CRON='* * * * * *'
 ```
@@ -124,7 +124,7 @@ Encryption is configured using Spring Security's `TextEncryptor` in `SecurityCon
 The system includes a comprehensive analytics pipeline:
 
 ### Data Service
-- **gRPC API**: Port 9090 for recording answer events, retrieving analytics, and streaming analytics with periodic polling
+- **gRPC API**: Port 50051 for recording answer events, retrieving analytics, and streaming analytics with periodic polling
 - **Health checks**: HTTP endpoint on port 8081 (`/health/ready`, `/health/live`)
 - **Database**: Shares PostgreSQL instance with bot service
 - **Performance**: Handles ≥100 events/second, queries respond in <5ms for 10k records
@@ -139,7 +139,7 @@ Add these to your `.env` file for analytics functionality:
 
 ```bash
 # Data Service Configuration
-DATA_SERVICE_PORT=9090
+DATA_SERVICE_PORT=50051
 DATA_SERVICE_DB_SCHEMA=public
 DATA_SERVICE_DB_MAX_POOL_SIZE=15
 
@@ -198,7 +198,7 @@ If data service is already running:
 
 1. **Configure the correct port** in `application.properties`:
    - Edit `spaced-repetition-ui/src/main/resources/application.properties`
-   - Set `data.service.url=localhost:9090` for production (port 9090)
+   - Set `data.service.url=localhost:50051` for production (port 50051)
    - Set `data.service.url=localhost:50051` for development (port 50051)
 
 2. Build and run UI:
@@ -211,7 +211,7 @@ java -jar target/spaced-repetition-ui-0.0.1-SNAPSHOT.jar
 **Important**: System property overrides (`-Ddata.service.url`) are **NOT** supported. You must edit `application.properties` directly.
 
 **Default Port Mappings**:
-- Data Service gRPC: 9090 (production), 50051 (development)
+- Data Service gRPC: 50051 (production), 50051 (development)
 - Data Service HTTP Health: 8081
 - Bot Service: 8080
 - PostgreSQL Database: 5432

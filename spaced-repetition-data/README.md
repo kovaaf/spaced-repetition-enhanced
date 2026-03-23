@@ -8,7 +8,7 @@ The data service exposes gRPC endpoints for recording answer events and retrievi
 
 ## Architecture
 
-- **gRPC serverProperties**: Port 9090 (configurable via `DATA_SERVICE_PORT`)
+- **gRPC serverProperties**: Port 50051 (configurable via `DATA_SERVICE_PORT`)
 - **HTTP health endpoint**: Port 8081 (configurable via `SERVER_PORT`)
 - **Database**: PostgreSQL with schema `public`
 - **Connection pooling**: HikariCP with max 15 connections
@@ -95,8 +95,8 @@ docker build -t spaced-repetition-data .
 # Run container (default port 50051 for gRPC, 8081 for HTTP health)
 docker run -p 50051:50051 -p 8081:8081 spaced-repetition-data
 
-# Run with custom port (e.g., production port 9090)
-docker run -p 9090:9090 -p 8081:8081 -e DATA_SERVICE_PORT=9090 spaced-repetition-data
+# Run with custom port (e.g., production port 50051)
+docker run -p 50051:50051 -p 8081:8081 -e DATA_SERVICE_PORT=50051 spaced-repetition-data
 ```
 
 ### Docker Compose
@@ -109,7 +109,7 @@ services:
   spaced-repetition-data:
     image: spaced-repetition-data:latest
     ports:
-      - "9090:9090"  # gRPC port
+      - "50051:50051"  # gRPC port
       - "8081:8081"  # HTTP health endpoint
     depends_on:
       spaced-repetition-bot-db:
@@ -180,7 +180,7 @@ Integration tests use TestContainers PostgreSQL (requires Docker).
 
 1. **Database connection errors**: Verify PostgreSQL is running and environment variables are set correctly.
 2. **Schema mismatch**: Ensure `DATA_SERVICE_DB_SCHEMA` is set to `public` (not `bot`).
-3. **Port conflicts**: Check that ports 9090 and 8081 are not already in use.
+3. **Port conflicts**: Check that ports 50051 and 8081 are not already in use.
 4. **gRPC client errors**: Verify the service is running and the gRPC channel is configured correctly.
 
 ### Logs

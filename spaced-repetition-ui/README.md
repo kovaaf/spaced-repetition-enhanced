@@ -20,7 +20,7 @@ The UI module provides a graphical interface for viewing analytics data collecte
 ## Architecture
 
 - **Plain Java Swing**: No Spring Boot dependencies
-- **gRPC client**: Communicates with data service on port 9090
+- **gRPC client**: Communicates with data service on port 50051
 - **SwingWorker**: Background data fetching to avoid UI blocking
 - **MVC pattern**: Separation of UI components, business logic, and data fetching
 
@@ -46,7 +46,7 @@ Primary application window with three regions:
 ### Prerequisites
 
 - Java 17 or higher
-- Running instance of Spaced Repetition Data Service (port 9090)
+- Running instance of Spaced Repetition Data Service (port 50051)
 - PostgreSQL database (shared with bot and data service)
 
 ### Building
@@ -64,7 +64,7 @@ Start all services including data service:
 # Development (port 50051)
 docker-compose -f docker-compose-dev.yml up -d
 
-# Production (port 9090)  
+# Production (port 50051)  
 docker-compose up -d
 ```
 
@@ -82,7 +82,7 @@ If data service is already running:
 
 1. **Configure the correct port** in `application.properties`:
    - Development (port 50051): `data.service.url=localhost:50051`
-   - Production (port 9090): `data.service.url=localhost:9090`
+   - Production (port 50051): `data.service.url=localhost:50051`
 
 2. Build and run UI:
 ```bash
@@ -102,12 +102,12 @@ Run `StatisticsViewer.main()` (entry point class) from your IDE.
 The UI connects to the data service using configuration in `application.properties`:
 
 ```properties
-# Default production configuration (port 9090)
-data.service.url=localhost:9090
+# Default production configuration (port 50051)
+data.service.url=localhost:50051
 ```
 
 **Port Configuration**:
-- **Production**: Port 9090 (data service production port in `docker-compose.yml`)
+- **Production**: Port 50051 (data service production port in `docker-compose.yml`)
 - **Development**: Port 50051 (data service default development port in `docker-compose-dev.yml`)
 
 **Important Configuration Notes**:
@@ -115,10 +115,10 @@ data.service.url=localhost:9090
 2. **Default Behavior**: If `application.properties` is not found or cannot be parsed, the UI defaults to `localhost:50051`.
 3. **Development Setup**: For development with `docker-compose-dev.yml`, you **MUST** edit `application.properties`:
    ```properties
-   # Change from 9090 to 50051 for development
+   # Change from 50051 to 50051 for development
    data.service.url=localhost:50051
    ```
-4. **Production Setup**: For production with `docker-compose.yml`, use the default `localhost:9090`.
+4. **Production Setup**: For production with `docker-compose.yml`, use the default `localhost:50051`.
 
 ### Configuration Workflow
 
@@ -136,10 +136,10 @@ data.service.url=localhost:9090
    java -jar target/spaced-repetition-ui-0.0.1-SNAPSHOT.jar
    ```
 
-#### For Production (port 9090):
+#### For Production (port 50051):
 1. Ensure `application.properties` has:
    ```properties
-   data.service.url=localhost:9090
+   data.service.url=localhost:50051
    ```
 2. Build and run as usual.
 
@@ -172,7 +172,7 @@ The application follows TRD Appendix E layout with three panels:
 │ └──────────────────────────────────────────────────┘   │
 │ Placeholder data - TODO: Connect to data service       │
 ├─────────────────────────────────────────────────────────┤
-│ Ready - Connected to data service: localhost:9090 [↻]  │
+│ Ready - Connected to data service: localhost:50051 [↻]  │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -252,13 +252,13 @@ mvn test -Dtest="*IntegrationTest" -Djava.awt.headless=true
 ### Common Issues
 
 1. **Connection refused**: Ensure data service is running on the expected host/port:
-   - **Production**: Port 9090 (check with `docker-compose up -d`)
+   - **Production**: Port 50051 (check with `docker-compose up -d`)
    - **Development**: Port 50051 (check with `docker-compose -f docker-compose-dev.yml up -d`)
    
    **Fix**: Verify `application.properties` has the correct port:
    ```properties
-   # For production (9090)
-   data.service.url=localhost:9090
+   # For production (50051)
+   data.service.url=localhost:50051
    
    # For development (50051)  
    data.service.url=localhost:50051
@@ -266,7 +266,7 @@ mvn test -Dtest="*IntegrationTest" -Djava.awt.headless=true
 
 2. **Port mismatch between UI and data service**:
    - Symptom: UI shows "Connection refused" even though data service is running
-   - Cause: UI configured for port 9090 but data service runs on 50051 (or vice versa)
+   - Cause: UI configured for port 50051 but data service runs on 50051 (or vice versa)
    - **Fix**: Edit `application.properties` to match the data service port and rebuild JAR
 
 3. **System property override not working**:
