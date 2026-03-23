@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.company.spacedrepetitionbot.service.DeckService;
 import org.company.spacedrepetitionbot.service.default_deck.event.SyncEventDTO;
-import org.company.spacedrepetitionbot.service.default_deck.processors.SyncEventProcessor;
+import org.company.spacedrepetitionbot.service.default_deck.sync.processors.SyncEventProcessor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;

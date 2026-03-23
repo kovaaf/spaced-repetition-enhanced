@@ -2,7 +2,7 @@ package org.company.spacedrepetitionbot.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.company.spacedrepetitionbot.service.default_deck.executors.GitHubWebhookService;
+import org.company.spacedrepetitionbot.service.default_deck.sync.webhook.GitHubWebhookService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

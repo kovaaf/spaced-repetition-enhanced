@@ -38,7 +38,7 @@ RUN apk add --no-cache curl
 WORKDIR /app
 COPY --from=build /build/build/libs/data-service.jar app.jar
 
-EXPOSE 9090
+EXPOSE 50051
 
 HEALTHCHECK --interval=15s --timeout=5s --retries=3 --start-period=30s \
     CMD curl -f http://localhost:8081/health/ready || exit 1

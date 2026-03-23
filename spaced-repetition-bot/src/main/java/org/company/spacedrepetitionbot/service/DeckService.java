@@ -2,7 +2,7 @@ package org.company.spacedrepetitionbot.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.company.spacedrepetitionbot.config.AppProperties;
+import org.company.spacedrepetitionbot.config.properties.AppProperties;
 import org.company.spacedrepetitionbot.constants.MessageConstants;
 import org.company.spacedrepetitionbot.exception.DeckNotFoundException;
 import org.company.spacedrepetitionbot.model.Card;
