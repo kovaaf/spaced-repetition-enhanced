@@ -11,6 +11,7 @@ jobs:
     outputs:
       spaced-repetition-bot: ${{ steps.filter.outputs.spaced-repetition-bot }}
       spaced-repetition-data: ${{ steps.filter.outputs.spaced-repetition-data }}
+      xray-vpn: ${{ steps.filter.outputs.xray-vpn }}
       docker-compose: ${{ steps.filter.outputs.docker-compose }}
     steps:
       - uses: actions/checkout@v4
@@ -21,6 +22,7 @@ jobs:
           filters: |
             spaced-repetition-bot: ['spaced-repetition-bot/**']
             spaced-repetition-data: ['spaced-repetition-data/**']
+            xray-vpn: ['xray-vpn/**']
             docker-compose: ['docker-compose.yml']
 
   push-docker-compose-to-remote-server:
@@ -129,6 +131,7 @@ jobs:
                 services_to_update=()
                 [ '${{ needs.detect-changes.outputs.spaced-repetition-bot }}' = 'true' ] && services_to_update+=("spaced-repetition-bot")
                 [ '${{ needs.detect-changes.outputs.spaced-repetition-data }}' = 'true' ] && services_to_update+=("spaced-repetition-data")
+                [ '${{ needs.detect-changes.outputs.xray-vpn }}' = 'true' ] && services_to_update+=("xray-vpn")  # Добавить эту строку
                 for service in "${services_to_update[@]}"; do
                   docker compose pull --quiet $service
                   docker compose up -d --no-deps --force-recreate --remove-orphans $service
