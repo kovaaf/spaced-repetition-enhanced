@@ -23,12 +23,37 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
+  xray-vpn:
+    image: mzz2017/v2raya:latest
+    container_name: xray-vpn
+    restart: unless-stopped
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun
+    ports:
+      - "8123:8123"   # HTTP прокси
+      - "2017:2017"   # веб-интерфейс
+    volumes:
+      - v2raya-data:/etc/v2raya
+    environment:
+      V2RAYA_ADDRESS: 0.0.0.0:2017
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "2017"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
   spaced-repetition-data:
     image: ouidockeruser/spaced-repetition-data-enhanced:latest
     container_name: spaced-repetition-data
     depends_on:
       spaced-repetition-bot-db:
         condition: service_healthy
+    ports:
+      - "50051:50051" # gRPC endpoint
+      - "8081:8081"  # HTTP health endpoint
     restart: unless-stopped
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:8081/health/ready" ]
@@ -36,9 +61,6 @@ services:
       timeout: 10s
       retries: 5
       start_period: 30s
-    ports:
-      - "50051:50051" # gRPC endpoint
-      - "8081:8081"  # HTTP health endpoint
     environment:
       _JAVA_OPTIONS: >-
         -XX:+HeapDumpOnOutOfMemoryError
@@ -66,6 +88,8 @@ services:
         condition: service_healthy
       spaced-repetition-data:
         condition: service_healthy
+      xray-vpn:
+        condition: service_healthy
     ports:
       - "8080:8080"
     restart: unless-stopped
@@ -81,6 +105,11 @@ services:
         -XX:HeapDumpPath=/tmp/heapdump-%p-%t.hprof
         -Xlog:gc*:file=/tmp/gc-detail.log:time,uptime,level,tags:filecount=5,filesize=20m
         -Dlogging.level.org.springframework.context.support.PostProcessorRegistrationDelegate=ERROR
+        -Dhttp.proxyHost=xray-vpn
+        -Dhttp.proxyPort=8123
+        -Dhttps.proxyHost=xray-vpn
+        -Dhttps.proxyPort=8123
+        -Dhttp.nonProxyHosts=localhost|127.0.0.1|spaced-repetition-bot-db|spaced-repetition-data|*.local
       POSTGRES_DB_HOST: spaced-repetition-bot-db
       POSTGRES_DB_PORT: ${POSTGRES_DB_PORT:-5432}
       POSTGRES_DB_USER: ${POSTGRES_DB_USER:-postgres}
@@ -106,3 +135,4 @@ services:
 
 volumes:
   postgres_data:
+  v2raya-data:
