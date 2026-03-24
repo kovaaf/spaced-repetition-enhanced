@@ -57,9 +57,9 @@ spring:
     name: spaced-repetition-bot
 
   datasource:
-    url: jdbc:postgresql://${TELEGRAM_BOT_DB_HOST:localhost}:${TELEGRAM_BOT_DB_PORT:5430}/spaced-repetition-bot-db
-    username: ${TELEGRAM_BOT_DB_USER:postgres}
-    password: ${TELEGRAM_BOT_DB_PASSWORD:postgres}
+    url: jdbc:postgresql://${POSTGRES_DB_HOST:localhost}:${POSTGRES_DB_PORT:5432}/${POSTGRES_DB_NAME:spaced-repetition-bot-db}
+    username: ${POSTGRES_DB_USER:postgres}
+    password: ${DB_PASSWORD:postgres}
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 3
@@ -77,23 +77,6 @@ spring:
   liquibase:
     enabled: true
     change-log: /changelog/master.xml
-
-  kafka:
-    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:kafka}:9092
-    consumer:
-      group-id: sync-group
-      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
-      properties:
-        spring.json.trusted.packages: "*" # TODO вынести все дто в отдельный модуль и указать его здесь
-    producer:
-      key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
-    topic:
-      sync:
-        events: sync-events
-        max-attempts: 3
-        initial-delay: 1000
 
 management:
   endpoints:
@@ -133,10 +116,7 @@ git:
 
 grpc:
   client:
-    myGrpcService:
-      address: 'static://localhost:9091'
-      negotiation-type: plaintext
     analytics-service:
-      address: ${DATA_SERVICE_URL:static://localhost:9091}
+      address: ${DATA_SERVICE_URL:static://localhost:50051}
       negotiation-type: plaintext
 

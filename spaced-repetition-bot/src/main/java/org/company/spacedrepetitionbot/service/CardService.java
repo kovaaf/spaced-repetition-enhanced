@@ -48,7 +48,6 @@ public class CardService {
         try {
             Deck deck = getDeckByOwnerIdAndDeckNameOrThrow(userChatId, deckName);
             Card card = getCardByFrontOrThrow(deck, front);
-
             return formatCardDetails(card);
         } catch (IllegalArgumentException e) {
             log.error("Ошибка получения карточки: {}", e.getMessage());
@@ -61,7 +60,11 @@ public class CardService {
         Deck deck = getDeckByOwnerIdAndDeckNameOrThrow(userChatId, deckName);
         validateCardNotExists(deck, front);
 
-        Card card = Card.builder().front(front).back(back).deck(deck).build();
+        Card card = Card.builder()
+                .front(front)
+                .back(back)
+                .deck(deck)
+                .build();
 
         cardRepository.save(card);
         return String.format(CARD_ADDED_SUCCESSFULLY.getMessage(), front, deckName);
@@ -73,12 +76,15 @@ public class CardService {
             Deck deck = deckRepository.findById(deckId)
                     .orElseThrow(() -> new IllegalArgumentException("Колода не найдена"));
 
-            // Проверка существования карточки
             if (cardRepository.existsByDeckAndFrontIgnoreCase(deck, front)) {
                 return;
             }
 
-            Card card = Card.builder().front(front).back(back).deck(deck).build();
+            Card card = Card.builder()
+                    .front(front)
+                    .back(back)
+                    .deck(deck)
+                    .build();
 
             cardRepository.save(card);
         } catch (IllegalArgumentException e) {
@@ -93,7 +99,9 @@ public class CardService {
             Deck deck = getDeckByOwnerIdAndDeckNameOrThrow(userChatId, deckName);
             Card card = getCardByFrontOrThrow(deck, front);
 
-            cardRepository.delete(card);
+            // Мягкое удаление
+            card.setDeletedAt(LocalDateTime.now());
+            cardRepository.save(card);
             return String.format(CARD_DELETED_SUCCESSFULLY.getMessage(), front, deckName);
         } catch (Exception e) {
             log.error("Ошибка удаления карты: {}", e.getMessage(), e);
@@ -105,11 +113,15 @@ public class CardService {
     public boolean deleteCard(Long cardId) {
         Card card = cardRepository.findById(cardId)
                 .orElseThrow(() -> new IllegalArgumentException("Карточка не найдена"));
-        cardRepository.delete(card);
+        // Мягкое удаление
+        card.setDeletedAt(LocalDateTime.now());
+        cardRepository.save(card);
         return true;
     }
 
-    public void deleteCard(Card card) {
+    // Физическое удаление (используется только при необходимости)
+    @Transactional
+    public void physicallyDeleteCard(Card card) {
         cardRepository.delete(card);
     }
 
@@ -171,8 +183,7 @@ public class CardService {
         }
     }
 
-    // TODO доставать все записи тяжело, нужно прикрутить пейджинг(плюс кнопки в меню) и вытаскивать с лимитом
-    @Transactional
+    @Transactional(readOnly = true)
     public String getAllCardsInDeck(Long userChatId, String deckName) {
         try {
             Deck deck = getDeckByOwnerIdAndDeckNameOrThrow(userChatId, deckName);
@@ -222,7 +233,6 @@ public class CardService {
         return String.format("%s%s", constant.getMessage(), e.getMessage());
     }
 
-    // TODO в зависимости от длительности интервала разные хроноюниты
     private String formatCardDetails(Card card) {
         long seconds = 0;
         if (card.getNextReviewTime() != null) {
@@ -264,19 +274,25 @@ public class CardService {
                 DateTimeFormatter.ofPattern(DATE_TIME_FORMAT.getMessage()).format(nextReviewTime);
     }
 
+    @Transactional(readOnly = true)
     public Optional<String> getCardDetails(Long cardId) {
         return cardRepository.findById(cardId)
+                .filter(card -> card.getDeletedAt() == null)
                 .map(card -> String.format("Вопрос: %s\nОтвет: %s", card.getFront(), card.getBack()));
     }
 
+    @Transactional(readOnly = true)
     public Optional<Long> getDeckIdByCardId(Long cardId) {
-        return cardRepository.findById(cardId).map(card -> card.getDeck().getDeckId());
+        return cardRepository.findById(cardId)
+                .filter(card -> card.getDeletedAt() == null)
+                .map(card -> card.getDeck().getDeckId());
     }
 
     @Transactional
     public String updateCardFront(Long cardId, String newFront) {
         Card card = cardRepository.findById(cardId)
-                .orElseThrow(() -> new IllegalArgumentException("Карточка не найдена"));
+                .filter(c -> c.getDeletedAt() == null)
+                .orElseThrow(() -> new IllegalArgumentException("Карточка не найдена или удалена"));
 
         String oldFront = card.getFront();
         card.setFront(newFront);
@@ -288,7 +304,8 @@ public class CardService {
     @Transactional
     public String updateCardBack(Long cardId, String newBack) {
         Card card = cardRepository.findById(cardId)
-                .orElseThrow(() -> new IllegalArgumentException("Карточка не найдена"));
+                .filter(c -> c.getDeletedAt() == null)
+                .orElseThrow(() -> new IllegalArgumentException("Карточка не найдена или удалена"));
 
         String oldBack = card.getBack();
         card.setBack(newBack);
@@ -299,9 +316,12 @@ public class CardService {
 
     @Transactional(readOnly = true)
     public Card getCardById(Long cardId) {
-        return cardRepository.findById(cardId).orElseThrow(() -> new EntityNotFoundException("Card not found"));
+        return cardRepository.findById(cardId)
+                .filter(card -> card.getDeletedAt() == null)
+                .orElseThrow(() -> new EntityNotFoundException("Card not found or deleted"));
     }
 
+    @Transactional
     public void save(Card card) {
         cardRepository.save(card);
     }
@@ -311,24 +331,36 @@ public class CardService {
         return cardRepository.countByDeck(deck);
     }
 
-    public void deleteByDeckAndSourceFilePath(Deck deck, String folderPath) {
-        cardRepository.deleteByDeckAndSourceFilePath(deck, folderPath);
+    // Методы для синхронизации (мягкое удаление)
+    @Transactional
+    public int softDeleteByDeckAndSourceFilePathNotIn(Deck deck, Set<String> processedFilePaths) {
+        return cardRepository.softDeleteByDeckAndSourceFilePathNotIn(deck, processedFilePaths);
     }
 
-    public void deleteByDeckAndSourceFilePathAndFrontNotIn(Deck deck, String sourceFilePath, List<String> validFronts) {
-        cardRepository.deleteByDeckAndSourceFilePathAndFrontNotIn(deck, sourceFilePath, validFronts);
+    @Transactional
+    public int softDeleteByDeckAndSourceFilePath(Deck deck, String filePath) {
+        return cardRepository.softDeleteByDeckAndSourceFilePath(deck, filePath);
     }
 
+    @Transactional
+    public int softDeleteByDeckAndSourceFilePathAndFrontNotIn(Deck deck, String sourceFilePath, List<String> validFronts) {
+        return cardRepository.softDeleteByDeckAndSourceFilePathAndFrontNotIn(deck, sourceFilePath, validFronts);
+    }
+
+    @Transactional(readOnly = true)
     public Optional<Card> getBySourceFilePathAndSourceHeading(String sourceFilePath, String sourceHeading) {
         return cardRepository.findBySourceFilePathAndSourceHeading(sourceFilePath, sourceHeading);
     }
 
+    @Transactional(readOnly = true)
     public int countByDeckAndSourceFilePath(Deck deck, String relativePath) {
         return cardRepository.countByDeckAndSourceFilePath(deck, relativePath);
     }
 
-    public int deleteByDeckAndSourceFilePathNotIn(Deck deck, Set<String> processedFilePaths) {
-        return cardRepository.deleteByDeckAndSourceFilePathNotIn(deck, processedFilePaths);
+    // Восстановление карточки
+    @Transactional
+    public void restoreIfDeleted(Deck deck, String filePath, String heading) {
+        cardRepository.restoreBySource(deck, filePath, heading);
     }
 
     private void validateCardNotExists(Deck deck, String front) {

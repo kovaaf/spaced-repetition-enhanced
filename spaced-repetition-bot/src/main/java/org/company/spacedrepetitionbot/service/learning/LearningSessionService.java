@@ -3,7 +3,7 @@ package org.company.spacedrepetitionbot.service.learning;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.company.spacedrepetitionbot.config.SessionProperties;
+import org.company.spacedrepetitionbot.config.properties.SessionProperties;
 import org.company.spacedrepetitionbot.constants.Quality;
 import org.company.spacedrepetitionbot.constants.Status;
 import org.company.spacedrepetitionbot.exception.DeckNotFoundException;

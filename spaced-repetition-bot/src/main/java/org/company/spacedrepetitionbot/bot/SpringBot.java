@@ -1,7 +1,7 @@
 package org.company.spacedrepetitionbot.bot;
 
 import lombok.extern.slf4j.Slf4j;
-import org.company.spacedrepetitionbot.config.BotConfigurationProperties;
+import org.company.spacedrepetitionbot.config.properties.BotConfigurationProperties;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.longpolling.interfaces.LongPollingUpdateConsumer;
 import org.telegram.telegrambots.longpolling.starter.SpringLongPollingBot;

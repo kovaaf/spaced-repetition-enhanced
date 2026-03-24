@@ -10,7 +10,6 @@
     </parent>
 
     <artifactId>spaced-repetition-bot</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
     <name>spaced-repetition-bot</name>
     <description>spaced-repetition-bot</description>
 
@@ -89,6 +88,7 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
+            <version>${lombok.version}</version>
             <scope>provided</scope>
         </dependency>
         <!--        <dependency>-->

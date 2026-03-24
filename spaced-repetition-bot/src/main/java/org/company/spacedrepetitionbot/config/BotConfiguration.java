@@ -1,5 +1,6 @@
 package org.company.spacedrepetitionbot.config;
 
+import org.company.spacedrepetitionbot.config.properties.BotConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.telegram.telegrambots.client.okhttp.OkHttpTelegramClient;
